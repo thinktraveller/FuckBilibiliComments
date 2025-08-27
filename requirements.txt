@@ -1,0 +1,20 @@
+# FuckBilibiliComments 项目依赖文件
+# 适用于 FuckBilibiliComments.py 和 csv_deduplicator.py
+
+# 网络请求库
+requests>=2.25.1
+
+# 数据处理库
+pandas>=1.3.0
+
+# NumPy版本限制（解决兼容性问题）
+numpy<2.0.0
+
+# Python版本要求：Python 3.7+
+# 说明：
+# - requests: 用于发送HTTP请求获取B站API数据
+# - pandas: 用于CSV文件的读取、处理和去重操作
+# - numpy<2.0.0: 限制NumPy版本避免与pandas的兼容性问题
+# 
+# 其他导入的模块均为Python标准库，无需额外安装：
+# - json, csv, datetime, time, hashlib, re, sys, logging, os, collections, shutil
