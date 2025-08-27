@@ -1,8 +1,0 @@
-{
-    "cookie": "enable_web_push=DISABLE; buvid4=EF198646-5A11-454B-4282-A3DD7F2A1D3A91404-023112011-; buvid_fp_plain=undefined; PVID=1; buvid3=5E675ECD-B52A-B31A-EDB5-0117F2E3CA8B16806infoc; b_nut=1744450616; _uuid=CCBC10E18-9101E-5449-10DC6-E3E1217872FE19335infoc; enable_feed_channel=ENABLE; theme_style=light; theme-tip-show=SHOWED; fingerprint=d448c4404bf82931a120eb33d24a21f4; buvid_fp=d448c4404bf82931a120eb33d24a21f4; rpdid=|(k|k)~~~umm0J'u~R~lkmYl); hit-dyn-v2=1; header_theme_version=OPEN; DedeUserID=3546372995287458; DedeUserID__ckMd5=b77446cbfee6faaf; theme-avatar-tip-show=SHOWED; theme-switch-show=SHOWED; CURRENT_QUALITY=0; bp_t_offset_3546372995287458=1104257210155794432; home_feed_column=5; browser_resolution=1883-864; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYyNjc0MjUsImlhdCI6MTc1NjAwODE2NSwicGx0IjotMX0.fA3zRcbU8hoshFC2qHqn0vRUhQbqTp4mp3EvQwR6CeM; bili_ticket_expires=1756267365; SESSDATA=842542c2%2C1771560226%2Cdda26%2A82CjBTWLaBGW0fVeAHlcv1lm5yAW5i2vfOaSv_jwDD9t0AdcqNzbDaHgCuHmYXeHBNIawSVmtwQWtwZU1JQXlRMm9ZUy1WU2lNNU1UTEhHenlyakF0Sk9QNlVubzlWcmRjeDI3LWJDcHk1Y0dWQ3BZejR6UWg5ZExmVTAtbnJpN1U4VkpkTDROUC1nIIEC; bili_jct=6b49845e786a3420ca958339e1cea2a9; sid=7ngm47d3; CURRENT_FNVAL=4048; b_lsid=6D11DAC5_198E1C7D19E",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
-    "description": {
-        "cookie": "从浏览器开发者工具中复制的完整Cookie字符串",
-        "user_agent": "浏览器的User-Agent字符串，用于模拟真实浏览器请求"
-    }
-}
