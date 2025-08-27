@@ -12,8 +12,7 @@
 3. 让用户选择时间段进行精细统计
 4. 生成小时、分钟级别的统计报告和折线图
 
-作者：基于FuckBilibiliComments.py提取
-版本：1.0
+基于FuckBilibiliComments.py提取
 """
 
 import os

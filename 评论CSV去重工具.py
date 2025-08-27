@@ -13,8 +13,7 @@ CSV文件去重工具
 使用方法：
 python csv_deduplicator.py <文件A路径> <文件B路径> [输出目录]
 
-作者：从FuckBilibiliComments.py提取
-日期：2025年1月
+基于FuckBilibiliComments.py提取
 Python版本要求：Python 3.7+
 """
 
