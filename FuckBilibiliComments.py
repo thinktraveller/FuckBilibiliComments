@@ -871,16 +871,23 @@ def get_user_input():
                 print(f"📺 视频标题: {video_title}")
                 print("⚠️  无法获取完整视频信息，但将继续执行爬取")
             else:
-                print("⚠️  无法获取视频标题，但将继续执行爬取")
+                print("❌ 无法获取视频标题，程序终止")
+                print("程序退出")
+                return None, None, None, None, None, None, None, video_info
             
     except Exception as e:
-        print(f"⚠️  获取视频信息失败: {e}")
-        print("将继续执行爬取...")
+        print(f"❌ 获取视频信息失败: {e}")
         # 尝试获取标题作为备选
         try:
             video_title = get_video_title_quick(bv_id)
+            if not video_title:
+                print("❌ 无法获取视频标题，程序终止")
+                print("程序退出")
+                return None, None, None, None, None, None, None, None
         except:
-            video_title = None
+            print("❌ 无法获取视频标题，程序终止")
+            print("程序退出")
+            return None, None, None, None, None, None, None, None
     
     # 选择爬取模式
     print("\n请选择爬取模式：")
@@ -4198,12 +4205,17 @@ if __name__ == "__main__":
                             if video_title:
                                 print(f"📺 视频标题: {video_title}")
                             else:
-                                print("⚠️ 无法获取视频标题，将使用默认命名")
+                                print("❌ 无法获取视频标题，程序终止")
+                                print("程序退出")
+                                sys.exit(1)
                     else:
-                        print("⚠️ 无法获取BV号")
+                        print("❌ 无法获取BV号，程序终止")
+                        print("程序退出")
+                        sys.exit(1)
                 except Exception as e:
-                    video_title = None
-                    print(f"⚠️ 获取视频信息失败: {e}")
+                    print(f"❌ 获取视频信息失败: {e}")
+                    print("程序退出")
+                    sys.exit(1)
                 
                 # 开始爬取
                 crawl_all_comments(default_oid, default_mode, default_ps, default_delay_ms, test_mode_flag, video_title, video_info)
@@ -4396,13 +4408,15 @@ if __name__ == "__main__":
                     bv_id = aid_to_bvid(int(oid))
                     video_title = get_video_title_quick(bv_id) if bv_id else None
                     if not video_title:
-                        video_title = None
-                        print("⚠️ 无法获取视频标题，将使用默认命名")
+                        print("❌ 无法获取视频标题，程序终止")
+                        print("程序退出")
+                        sys.exit(1)
                     else:
                         print(f"📺 视频标题: {video_title}")
                 except Exception as e:
-                    video_title = None
-                    print(f"⚠️ 获取视频标题失败: {e}")
+                    print(f"❌ 获取视频标题失败: {e}")
+                    print("程序退出")
+                    sys.exit(1)
                 
                 print(f"\n📁 输出文件夹: {output_folder}")
                 print(f"📝 主日志文件: {main_log_file}")
