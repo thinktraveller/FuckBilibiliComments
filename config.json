@@ -36,7 +36,7 @@
             "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         }
     ],
-    "selected_account_index": 5,
+    "selected_account_index": 0,
     "description": {
         "accounts": "账号配置列表，每个账号包含名称、cookie和user_agent",
         "selected_account_index": "当前选中的账号索引（从0开始）",
