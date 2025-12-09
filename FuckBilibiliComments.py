@@ -1509,6 +1509,7 @@ def create_output_folder(bv_id, video_title=None, mode_type=None):
     # 创建主文件夹
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
+    globals()['LAST_OUTPUT_FOLDER'] = folder_name
     
     return folder_name
 
@@ -5356,6 +5357,31 @@ def generate_folder_structure_md(output_folder, oid, video_title=None, logger=No
         return None
 
 
+def prompt_delete_logs(output_folder=None):
+    folder = output_folder or globals().get('LAST_OUTPUT_FOLDER')
+    if not folder:
+        return
+    try:
+        choice = input("是否删除logs文件夹？输入 y 确认，其他键取消: ").strip().lower()
+    except Exception:
+        return
+    if choice in ('y', 'yes'):
+        try:
+            logging.shutdown()
+        except Exception:
+            pass
+        logs_folder = os.path.join(folder, 'logs')
+        if os.path.exists(logs_folder):
+            try:
+                shutil.rmtree(logs_folder)
+                print(f"🗑️ 已删除logs文件夹: {logs_folder}")
+            except Exception as e:
+                print(f"[WARNING] 删除logs失败: {e}")
+        else:
+            print(f"[WARNING] 未找到logs文件夹: {logs_folder}")
+    else:
+        print("已保留logs文件夹")
+
 # 主程序
 if __name__ == "__main__":
     try:
@@ -5411,6 +5437,7 @@ if __name__ == "__main__":
                 # 开始爬取
                 try:
                     crawl_all_comments(default_oid, bv_id, default_mode, default_ps, default_delay_ms, test_mode_flag, video_title, video_info, global_request_headers)
+                    prompt_delete_logs()
                 except CookieBannedException as e:
                     print(f"\n❌ Cookie切换失败: {e}")
                     print("所有可用的cookie都已被封禁，程序终止")
@@ -5495,6 +5522,7 @@ if __name__ == "__main__":
                 if result:
                     print("✅ 迭代模式爬取完成")
                     logger.info("迭代模式爬取完成")
+                    prompt_delete_logs(output_folder)
                 else:
                     print("❌ 迭代模式爬取失败")
                     logger.error("迭代模式爬取失败")
@@ -5625,6 +5653,7 @@ if __name__ == "__main__":
                     print(f"[INFO] 数据完整性: [WARNING] 部分爬取 (可能存在未获取的评论)")
                 
                 print("="*50)
+                prompt_delete_logs(output_folder)
             elif mode == 'test':
                 # 测试模式 - 获取视频标题
                 print("\n🔍 正在获取视频信息...")
@@ -5704,6 +5733,7 @@ if __name__ == "__main__":
                 print("\n" + "="*50)
                 print("🎯 测试模式爬取结果")
                 print("="*50)
+                prompt_delete_logs(output_folder)
                 
                 sort_name = "热度排序" if test_sort_mode == 1 else "时间排序"
                 success = len(comments) > 0
