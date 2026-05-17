@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import FuckBilibiliComments; print\\('IMPORT OK'\\); print\\('names exposed:', len\\([n for n in dir\\(FuckBilibiliComments\\) if not n.startswith\\('_'\\)]\\)\\)\")",
+      "Bash(python -c \"from FuckBilibiliComments.api import DEFAULT_HEADERS; print\\('Cookie field:', repr\\(DEFAULT_HEADERS['Cookie']\\)\\); print\\('UA field:', DEFAULT_HEADERS['User-Agent'][:50]\\)\")",
+      "Bash(python _refactor_explicit.py)",
+      "Bash(python -c ' *)",
+      "Bash(sort -k9)"
+    ]
+  }
+}
