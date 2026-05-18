@@ -61,6 +61,54 @@ class _ResolveWorker(QObject):
 # 后台爬取 Worker
 # ---------------------------------------------------------------------------
 
+_LOG_SUPPRESS_KEYWORDS = (
+    "延时设置",
+    "测试模式",
+    "调试：",
+    "签名字符串",
+    "w_rid",
+    "中记录的回复数",        # 匹配 "主楼xxx：CSV中记录的回复数"（大小写均可）
+    "检测到内容溢出",
+    "楼中楼拖尾图片",        # 匹配 "生成图片: 楼中楼拖尾图片..."（含空格变体）
+    "性别分布",
+    "地区分布",
+    "等级分布",
+    "性别分步",
+    "地区分步",
+    "等级分步",
+    "评论趋势图已生成",      # 匹配 "[INFO] 评论趋势图已生成"（含空格变体）
+    "页面日志文件已创建",
+)
+
+
+class _StdoutCapture:
+    """将 print() 输出重定向到 log_signal，过滤调试噪声后显示在 GUI 日志窗口。"""
+
+    def __init__(self, log_signal):
+        self._signal = log_signal
+        self._buf = ""
+
+    @staticmethod
+    def _should_suppress(line: str) -> bool:
+        lower = line.lower()
+        return any(kw.lower() in lower for kw in _LOG_SUPPRESS_KEYWORDS)
+
+    def write(self, text: str):
+        self._buf += text
+        while "\n" in self._buf:
+            line, self._buf = self._buf.split("\n", 1)
+            line = line.strip()
+            if line and not self._should_suppress(line):
+                self._signal.emit("INFO", line)
+
+    def flush(self):
+        if self._buf.strip():
+            line = self._buf.strip()
+            self._buf = ""
+            if not self._should_suppress(line):
+                self._signal.emit("INFO", line)
+
+
 class _CrawlWorker(QObject):
     """在 QThread 中执行 run_crawl()，通过信号向主线程汇报进度与日志。"""
 
@@ -74,13 +122,20 @@ class _CrawlWorker(QObject):
         self._abort_event = abort_event
 
     def run(self):
+        import sys
         cb = TaskCallbacks(
             log=lambda level, msg: self.log_signal.emit(level, msg),
             progress=lambda cur, tot: self.progress_signal.emit(cur, tot),
-            prompt=lambda q: "",          # GUI 模式暂不支持交互询问
+            prompt=lambda q: "",
             is_aborted=lambda: self._abort_event.is_set(),
         )
-        result = run_crawl(self._params, cb)
+        # 将底层 crawl.py 的 print() 输出重定向到日志窗口
+        old_stdout = sys.stdout
+        sys.stdout = _StdoutCapture(self.log_signal)
+        try:
+            result = run_crawl(self._params, cb)
+        finally:
+            sys.stdout = old_stdout
         self.finished.emit(result)
 
 
@@ -277,13 +332,11 @@ class CrawlTab(QWidget):
         self._mode_group = QButtonGroup(self)
 
         self._rb_comprehensive = QRadioButton("综合模式（默认，先热度后时间）")
-        self._rb_hot           = QRadioButton("仅热度排序")
-        self._rb_time          = QRadioButton("仅时间排序")
         self._rb_iterative     = QRadioButton("迭代模式")
 
         self._rb_comprehensive.setChecked(True)
 
-        for rb in (self._rb_comprehensive, self._rb_hot, self._rb_time, self._rb_iterative):
+        for rb in (self._rb_comprehensive, self._rb_iterative):
             self._mode_group.addButton(rb)
             mode_layout.addWidget(rb)
 
@@ -304,11 +357,9 @@ class CrawlTab(QWidget):
         opts_layout.setSpacing(4)
 
         self._cb_replies  = QCheckBox("包含楼中楼回复")
-        self._cb_charged  = QCheckBox("包含充电视频评论")
         self._cb_replies.setChecked(True)
 
         opts_layout.addWidget(self._cb_replies)
-        opts_layout.addWidget(self._cb_charged)
 
         layout.addWidget(opts_box)
 
@@ -486,8 +537,8 @@ class CrawlTab(QWidget):
 
     def _set_params_enabled(self, enabled: bool):
         for w in (
-            self._rb_comprehensive, self._rb_hot, self._rb_time, self._rb_iterative,
-            self._cb_replies, self._cb_charged, self._interval_spin,
+            self._rb_comprehensive, self._rb_iterative,
+            self._cb_replies, self._interval_spin,
         ):
             w.setEnabled(enabled)
 
@@ -604,49 +655,29 @@ class CrawlTab(QWidget):
 
         # 确定模式
         if self._rb_comprehensive.isChecked():
-            mode      = "comprehensive"
-            test_sort = 1
-            max_pages = 999
-        elif self._rb_hot.isChecked():
-            mode      = "test"
-            test_sort = 1       # 热度排序
-            max_pages = 999
-        elif self._rb_time.isChecked():
-            mode      = "test"
-            test_sort = 0       # 时间排序
-            max_pages = 999
-        else:  # iterative
-            mode      = "iteration"
-            test_sort = 1
-            max_pages = 999
+            mode = "comprehensive"
+        else:
+            mode = "iteration"
 
         # 迭代模式配置
         iteration_config: dict = {}
         if mode == "iteration":
             if self._rb_iter_time.isChecked():
-                iteration_config = {
-                    "type":  "time",
-                    "value": self._iter_time_spin.value(),
-                }
+                iteration_config = {"type": "time", "value": self._iter_time_spin.value()}
             else:
-                iteration_config = {
-                    "type":  "rate",
-                    "value": self._iter_rate_spin.value(),
-                }
+                iteration_config = {"type": "rate", "value": self._iter_rate_spin.value()}
 
         return CrawlParams(
-            oid             = self._oid,
-            bv_id           = self._bv_id,
-            video_info      = self._video_info,
-            video_title     = self._video_info.get("title", self._bv_id),
-            mode            = mode,
-            test_sort       = test_sort,
-            max_pages       = max_pages,
-            ps              = 20,
-            delay_ms        = self._interval_spin.value(),
-            request_headers = request_headers,
-            output_dir      = None,
-            iteration_config= iteration_config,
+            oid              = self._oid,
+            bv_id            = self._bv_id,
+            video_info       = self._video_info,
+            video_title      = self._video_info.get("title", self._bv_id),
+            mode             = mode,
+            ps               = 20,
+            delay_ms         = self._interval_spin.value(),
+            request_headers  = request_headers,
+            output_dir       = None,
+            iteration_config = iteration_config,
         )
 
     # ------------------------------------------------------------------
@@ -669,7 +700,6 @@ class CrawlTab(QWidget):
         acc_name = acc.get("name", "") if acc else ""
         mode_label = {
             "comprehensive": "综合模式",
-            "test":          "测试模式（热度）" if params.test_sort == 1 else "测试模式（时间）",
             "iteration":     "迭代模式",
         }.get(params.mode, params.mode)
 

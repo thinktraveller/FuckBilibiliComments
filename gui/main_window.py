@@ -19,6 +19,7 @@ from PySide6.QtGui import QIcon, QFont
 
 from gui.tabs.account_tab import AccountTab
 from gui.tabs.crawl_tab import CrawlTab
+from gui.tabs.dedup_tab import DedupTab
 
 
 # ---------------------------------------------------------------------------
@@ -79,24 +80,20 @@ class MainWindow(QMainWindow):
         self._crawl_tab = CrawlTab()
         self._tab_widget.addTab(self._crawl_tab, "评论爬取")
 
-        # Tab 2：时间统计（M3 实现）
-        stats_tab = _make_placeholder_tab("时间统计\n\n（将在 M3 阶段实现）")
-        self._tab_widget.addTab(stats_tab, "时间统计")
+        # Tab 2：CSV 去重（M3 实现）
+        self._dedup_tab = DedupTab()
+        self._tab_widget.addTab(self._dedup_tab, "CSV 去重")
 
-        # Tab 3：CSV 去重（M3 实现）
-        dedup_tab = _make_placeholder_tab("CSV 去重\n\n（将在 M3 阶段实现）")
-        self._tab_widget.addTab(dedup_tab, "CSV 去重")
-
-        # Tab 4：历史记录（M4 实现）
+        # Tab 3：历史记录（M4 实现）
         history_tab = _make_placeholder_tab("历史记录\n\n（将在 M4 阶段实现）")
         self._tab_widget.addTab(history_tab, "历史记录")
 
-        # Tab 5：账号管理（M1 完整实现）
+        # Tab 4：账号管理（M1 完整实现）
         self._account_tab = AccountTab()
         self._account_tab.current_account_changed.connect(self._on_current_account_changed)
         self._tab_widget.addTab(self._account_tab, "账号管理")
 
-        # Tab 6：帮助教程（M5 实现）
+        # Tab 5：帮助教程（M5 实现）
         help_tab = _make_placeholder_tab("帮助教程\n\n（将在 M5 阶段实现）")
         self._tab_widget.addTab(help_tab, "帮助教程")
 

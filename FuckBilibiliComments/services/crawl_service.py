@@ -16,14 +16,13 @@ from typing import Optional, Tuple
 from ..callbacks import TaskCallbacks, make_cli_callbacks
 from ..cookie import get_request_headers, load_config
 from ..errors import CookieBannedException, handle_cookie_banned_error
-from ..io_utils import create_output_folder, generate_safe_filename, save_comments_to_csv, setup_logging
+from ..io_utils import create_output_folder, setup_logging
 from ..processing import process_and_organize_data
 from ..reports import generate_folder_structure_md
 from ..stats import generate_restructured_time_statistics
 from ..video import parse_video_input, get_video_info, get_video_info_from_api, get_video_title_quick
 from ..crawl import (
     crawl_comprehensive_mode_comments,
-    crawl_test_mode_comments,
     crawl_iteration_mode_comments,
     process_comprehensive_mode_data,
 )
@@ -68,18 +67,16 @@ class CrawlParams:
     爬取参数容器，供 CLI / GUI 统一构造后传给 run_crawl。
 
     Attributes:
-        oid          视频 av id（字符串）
-        bv_id        视频 BV 号
-        video_info   视频信息字典
-        video_title  视频标题
-        mode         爬取模式：'comprehensive' / 'test' / 'iteration'
-        test_sort    测试模式排序：0=时间 1=热度（仅 mode=='test' 时有效）
-        max_pages    测试模式最大页数（仅 mode=='test' 时有效）
-        ps           每页数量（固定 20）
-        delay_ms     请求延时（毫秒）
+        oid              视频 av id（字符串）
+        bv_id            视频 BV 号
+        video_info       视频信息字典
+        video_title      视频标题
+        mode             爬取模式：'comprehensive' / 'iteration'
+        ps               每页数量（固定 20）
+        delay_ms         请求延时（毫秒）
         request_headers  完整请求头字典
-        output_dir   指定输出目录；为 None 时自动生成
-        iteration_config  迭代模式配置字典（仅 mode=='iteration' 时有效）
+        output_dir       指定输出目录；为 None 时自动生成
+        iteration_config 迭代模式配置字典（仅 mode=='iteration' 时有效）
     """
 
     def __init__(
@@ -89,8 +86,6 @@ class CrawlParams:
         video_info: Optional[dict] = None,
         video_title: Optional[str] = None,
         mode: str = "comprehensive",
-        test_sort: int = 1,
-        max_pages: int = 5,
         ps: int = 20,
         delay_ms: int = 3000,
         request_headers: Optional[dict] = None,
@@ -102,8 +97,6 @@ class CrawlParams:
         self.video_info       = video_info or {}
         self.video_title      = video_title or bv_id
         self.mode             = mode
-        self.test_sort        = test_sort
-        self.max_pages        = max_pages
         self.ps               = ps
         self.delay_ms         = delay_ms
         self.request_headers  = request_headers or {}
@@ -170,8 +163,6 @@ def run_crawl(params: CrawlParams, cb: Optional[TaskCallbacks] = None) -> dict:
         # 分发到各模式
         if params.mode == "comprehensive":
             _run_comprehensive(params, output_folder, logger, cb, result)
-        elif params.mode == "test":
-            _run_test(params, output_folder, logger, cb, result)
         elif params.mode == "iteration":
             _run_iteration(params, output_folder, logger, cb, result)
         else:
@@ -199,11 +190,7 @@ def _get_mode_type(params: CrawlParams) -> str:
     if params.mode == "iteration":
         it_type = params.iteration_config.get("type", "time")
         return "iteration_time" if it_type == "time" else "iteration_rate"
-    elif params.mode == "comprehensive":
-        return "comprehensive"
-    elif params.mode == "test":
-        return "test_time" if params.test_sort == 0 else "test_popularity"
-    return None
+    return "comprehensive"
 
 
 def _run_comprehensive(params, output_folder, logger, cb, result):
@@ -254,47 +241,9 @@ def _run_comprehensive(params, output_folder, logger, cb, result):
     # 文件夹结构文档
     generate_folder_structure_md(output_folder, params.oid, params.video_title, logger, params.bv_id)
 
-    result["success"]          = True
+    result["success"]           = True
     result["stats"]["comments"] = len(merged)
-
-
-def _run_test(params, output_folder, logger, cb, result):
-    """测试模式爬取流程。"""
-    sort_name = "热度排序" if params.test_sort == 1 else "时间排序"
-    cb.log("INFO", f"启动测试模式爬取（{sort_name}，{params.max_pages} 页）")
-
-    comments, end_reason = crawl_test_mode_comments(
-        oid=params.oid,
-        bv_id=params.bv_id,
-        sort_mode=params.test_sort,
-        ps=params.ps,
-        delay_ms=params.delay_ms,
-        max_pages=params.max_pages,
-        logger=logger,
-        output_folder=output_folder,
-    )
-
-    cb.log("INFO", f"测试模式结束：{end_reason}，共 {len(comments)} 条评论")
-
-    if comments:
-        # 保存原始 CSV
-        raw_fn = generate_safe_filename(params.video_title, params.bv_id, f"测试模式_{sort_name}", "original")
-        raw_path = os.path.join(output_folder, f"{raw_fn}.csv")
-        save_comments_to_csv(comments, raw_path, f"测试模式_{sort_name}")
-
-        # 整理
-        sort_by_pop = (params.test_sort == 1)
-        mode_param  = "test_popularity" if sort_by_pop else "test_time"
-        process_and_organize_data(
-            comments, output_folder, params.bv_id, logger,
-            params.video_title, sort_by_popularity=sort_by_pop,
-            video_info=params.video_info, mode=mode_param,
-        )
-
-        generate_folder_structure_md(output_folder, params.oid, params.video_title, logger, params.bv_id)
-
-    result["success"]          = True
-    result["stats"]["comments"] = len(comments)
+    cb.log("INFO", "爬取任务已结束！")
 
 
 def _run_iteration(params, output_folder, logger, cb, result):

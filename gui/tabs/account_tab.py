@@ -9,8 +9,8 @@ GUI 层只负责信号槽绑定和界面更新。
 
 from PySide6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QListWidget, QListWidgetItem,
-    QLabel, QLineEdit, QTextEdit, QComboBox, QPushButton, QGroupBox,
-    QFormLayout, QMessageBox, QSplitter, QFrame, QSizePolicy,
+    QLabel, QLineEdit, QTextEdit, QPushButton, QGroupBox,
+    QFormLayout, QMessageBox, QSplitter, QSizePolicy,
 )
 from PySide6.QtCore import Qt, QThread, Signal, QObject
 from PySide6.QtGui import QFont, QColor
@@ -18,24 +18,22 @@ from PySide6.QtGui import QFont, QColor
 from FuckBilibiliComments.services import account_service
 
 
-# ---------------------------------------------------------------------------
-# 预设 UA
-# ---------------------------------------------------------------------------
-_UA_FIREFOX = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) "
-    "Gecko/20100101 Firefox/146.0"
-)
-_UA_CHROME = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/124.0.0.0 Safari/537.36"
+_COOKIE_HELP_HTML = (
+    '如何获取 Cookie：<br>'
+    '1. 安装浏览器扩展 '
+    '<a href="https://cookie-editor.com/">Cookie-Editor</a>'
+    '（支持 Chrome / Edge / Firefox）<br>'
+    '2. 在浏览器中<b>登录 B 站</b>，然后点击扩展图标<br>'
+    '3. 点击右下角 <b>Export → Header String</b>，复制全部内容粘贴到上方输入框'
 )
 
-_UA_PRESETS = {
-    "Firefox (默认)": _UA_FIREFOX,
-    "Chrome": _UA_CHROME,
-    "自定义": "",
-}
+_UA_HELP_HTML = (
+    '如何获取当前浏览器的 User-Agent：<br>'
+    '&bull; <b>Chrome</b>：地址栏输入 <code>chrome://version</code> → 找"用户代理"<br>'
+    '&bull; <b>Edge</b>：地址栏输入 <code>edge://version</code> → 找"用户代理"<br>'
+    '&bull; <b>Firefox</b>：地址栏输入 <code>about:support</code> → 找"用户代理"<br>'
+    '复制完整字符串粘贴到上方输入框'
+)
 
 
 # ---------------------------------------------------------------------------
@@ -164,24 +162,29 @@ class AccountTab(QWidget):
         self._cookie_masked_label.hide()
         form_layout.addRow("", self._cookie_masked_label)
 
-        # UA 下拉 + 自定义
-        ua_widget = QWidget()
-        ua_layout = QVBoxLayout(ua_widget)
-        ua_layout.setContentsMargins(0, 0, 0, 0)
-        ua_layout.setSpacing(4)
+        # Cookie 获取教程
+        cookie_help_label = QLabel(_COOKIE_HELP_HTML)
+        cookie_help_label.setWordWrap(True)
+        cookie_help_label.setOpenExternalLinks(True)
+        cookie_help_label.setStyleSheet(
+            "color: #555; font-size: 11px; "
+            "background: #f0f4f8; border-radius: 4px; padding: 6px 8px;"
+        )
+        form_layout.addRow("", cookie_help_label)
 
-        self._ua_combo = QComboBox()
-        for label in _UA_PRESETS:
-            self._ua_combo.addItem(label)
-        self._ua_combo.currentTextChanged.connect(self._on_ua_preset_changed)
-        ua_layout.addWidget(self._ua_combo)
+        # UA 纯手动输入
+        self._ua_edit = QLineEdit()
+        self._ua_edit.setPlaceholderText("粘贴你的浏览器 User-Agent（必填，见下方说明）")
+        form_layout.addRow("User-Agent：", self._ua_edit)
 
-        self._ua_custom_edit = QLineEdit()
-        self._ua_custom_edit.setPlaceholderText("输入自定义 User-Agent")
-        self._ua_custom_edit.hide()
-        ua_layout.addWidget(self._ua_custom_edit)
-
-        form_layout.addRow("User-Agent：", ua_widget)
+        # UA 获取教程
+        ua_help_label = QLabel(_UA_HELP_HTML)
+        ua_help_label.setWordWrap(True)
+        ua_help_label.setStyleSheet(
+            "color: #555; font-size: 11px; "
+            "background: #f0f4f8; border-radius: 4px; padding: 6px 8px;"
+        )
+        form_layout.addRow("", ua_help_label)
 
         right_layout.addWidget(form_group)
 
@@ -270,8 +273,7 @@ class AccountTab(QWidget):
     def _set_right_panel_enabled(self, enabled: bool):
         self._name_edit.setEnabled(enabled)
         self._cookie_edit.setEnabled(enabled)
-        self._ua_combo.setEnabled(enabled)
-        self._ua_custom_edit.setEnabled(enabled)
+        self._ua_edit.setEnabled(enabled)
         self._btn_save.setEnabled(enabled)
         self._btn_cancel.setEnabled(enabled)
         self._btn_validate.setEnabled(enabled)
@@ -302,19 +304,7 @@ class AccountTab(QWidget):
 
         # UA
         ua = full.get("user_agent", "")
-        matched_preset = False
-        for label, preset_ua in _UA_PRESETS.items():
-            if label == "自定义":
-                continue
-            if ua == preset_ua:
-                self._ua_combo.setCurrentText(label)
-                self._ua_custom_edit.hide()
-                matched_preset = True
-                break
-        if not matched_preset:
-            self._ua_combo.setCurrentText("自定义")
-            self._ua_custom_edit.setText(ua)
-            self._ua_custom_edit.show()
+        self._ua_edit.setText(ua)
 
         self._validate_result_label.hide()
         self._set_right_panel_enabled(True)
@@ -329,19 +319,13 @@ class AccountTab(QWidget):
             "粘贴完整 Cookie 字符串（推荐用 Cookie-Editor 扩展导出）"
         )
         self._cookie_masked_label.hide()
-        self._ua_combo.setCurrentIndex(0)
-        self._ua_custom_edit.hide()
-        self._ua_custom_edit.clear()
+        self._ua_edit.clear()
         self._validate_result_label.hide()
         self._set_right_panel_enabled(True)
         self._name_edit.setFocus()
 
     def _get_current_ua(self) -> str:
-        """根据下拉框和自定义输入框，返回最终的 UA 字符串。"""
-        preset_label = self._ua_combo.currentText()
-        if preset_label == "自定义":
-            return self._ua_custom_edit.text().strip()
-        return _UA_PRESETS.get(preset_label, _UA_FIREFOX)
+        return self._ua_edit.text().strip()
 
     def _get_current_cookie(self) -> str:
         """返回当前 Cookie 输入框的内容（trim 后）。"""
@@ -362,12 +346,6 @@ class AccountTab(QWidget):
         index = item.data(Qt.UserRole)
         self._fill_right_panel(index)
         self._update_button_states()
-
-    def _on_ua_preset_changed(self, text: str):
-        if text == "自定义":
-            self._ua_custom_edit.show()
-        else:
-            self._ua_custom_edit.hide()
 
     def _on_new_account(self):
         self._list_widget.clearSelection()

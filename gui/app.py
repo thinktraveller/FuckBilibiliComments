@@ -9,6 +9,7 @@ GUI 应用入口
 import sys
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 
 from gui.main_window import MainWindow
 
@@ -30,11 +31,8 @@ def run_gui() -> int:
     app.setApplicationVersion("1.0.0")
     app.setOrganizationName("thinktraveller")
 
-    # 设置全局字体（Windows 下 Microsoft YaHei 对中文更友好）
-    from PySide6.QtGui import QFont
-    default_font = QFont("Microsoft YaHei UI", 9)
-    default_font.setFallback(True)
-    app.setFont(default_font)
+    # 用 Segoe UI 替换 Windows 旧默认字体 MS Sans Serif，消除 DirectWrite 警告
+    app.setFont(QFont("Segoe UI", 9))
 
     window = MainWindow()
     window.show()
