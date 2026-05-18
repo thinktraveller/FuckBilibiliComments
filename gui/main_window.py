@@ -18,6 +18,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QFont
 
 from gui.tabs.account_tab import AccountTab
+from gui.tabs.crawl_tab import CrawlTab
 
 
 # ---------------------------------------------------------------------------
@@ -75,8 +76,8 @@ class MainWindow(QMainWindow):
     def _setup_tabs(self):
         """向 TabWidget 添加 6 个 Tab。"""
         # Tab 1：评论爬取（M2 实现）
-        crawl_tab = _make_placeholder_tab("评论爬取\n\n（将在 M2 阶段实现）")
-        self._tab_widget.addTab(crawl_tab, "评论爬取")
+        self._crawl_tab = CrawlTab()
+        self._tab_widget.addTab(self._crawl_tab, "评论爬取")
 
         # Tab 2：时间统计（M3 实现）
         stats_tab = _make_placeholder_tab("时间统计\n\n（将在 M3 阶段实现）")
@@ -139,5 +140,8 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def _on_current_account_changed(self, name: str):
-        """响应账号管理 Tab 发出的账号变更信号，更新状态栏。"""
+        """响应账号管理 Tab 发出的账号变更信号，更新状态栏并通知爬取 Tab。"""
         self._account_label.setText(f"当前账号：{name}")
+        # 通知爬取 Tab 同步账号显示
+        if hasattr(self, "_crawl_tab"):
+            self._crawl_tab._refresh_account_display()

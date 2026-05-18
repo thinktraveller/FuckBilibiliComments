@@ -57,6 +57,42 @@
 
 ---
 
+## [2026-05-19] M2 阶段：评论爬取 Tab
+
+### 执行的任务
+
+1. **读取实际接口**：仔细核对 `crawl_service.py`、`callbacks.py`、`account_service.py`、`history_service.py` 的真实签名，发现与计划书描述存在若干差异（见下方问题记录）。
+2. **创建 `gui/tabs/crawl_tab.py`**：完整实现评论爬取 Tab，包含：
+   - 视频输入区（BV 号/链接输入 + 异步解析 + 视频信息卡片/错误提示）
+   - 爬取参数区（4 种模式单选、迭代附加参数、楼中楼/充电视频复选、间隔输入框）
+   - 控制区（开始/停止按钮、账号状态显示栏）
+   - 进度与日志区（进度条、已爬/唯一/耗时/速率 4 个统计标签、5000 行上限日志窗口）
+   - 后台 QThread Worker（ResolveWorker + CrawlWorker，TaskCallbacks 通过 Signal 桥接）
+   - 历史记录联动（开始时 add_task running，结束时 update_task）
+   - 完成对话框（成功/停止/失败三种状态 + "打开输出文件夹"按钮）
+3. **修改 `gui/main_window.py`**：将 Tab 1 从占位替换为 `CrawlTab()`；账号切换时联动刷新爬取 Tab 的账号显示。
+
+### 关键变更
+
+| 文件 | 变更类型 | 说明 |
+|------|---------|------|
+| `gui/tabs/crawl_tab.py` | 新增 | 评论爬取 Tab 完整实现（约 450 行） |
+| `gui/main_window.py` | 修改 | 注册 CrawlTab；账号切换联动 |
+
+### 遇到的问题及解决方案
+
+- `resolve_video()` 实际只接受一个参数（`bv_or_url`），不接受 `cookie/ua`；已按实际签名调用。
+- `crawl_service` 中无 `hot` / `time` 模式，而是用 `mode="test"` + `test_sort=0/1` 区分热度/时间排序；UI 提供 4 个选项，内部映射到正确参数。
+- `TaskCallbacks` 是普通数据类（4 个可调用字段），不是 dataclass with threading.Event；中止逻辑通过在 `is_aborted` 字段中闭包 `threading.Event.is_set` 实现。
+- `video_info` 中评论数字段路径为 `stat.reply`，发布时间为 UNIX 时间戳，UP 主为嵌套 dict；已逐一处理。
+
+### 下一步计划（M3）
+
+- 实现「时间统计」Tab：加载已有 CSV 文件，调用 `stats_service.run_stats()` 生成时间统计报告
+- 实现「CSV 去重」Tab：选择多个 CSV 文件，调用 `dedup_service.run_dedup()` 合并去重
+
+---
+
 ## [2026-05-18] M1 阶段：主窗口骨架 + 账号管理 Tab
 
 ### 执行的任务
