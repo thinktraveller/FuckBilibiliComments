@@ -56,3 +56,51 @@
 - 前提：用户需安装 PySide6（`pip install "PySide6>=6.6,<6.8"`）
 
 ---
+
+## [2026-05-18] M1 阶段：主窗口骨架 + 账号管理 Tab
+
+### 执行的任务
+
+1. **新建 `gui/` 包**：建立 `gui/__init__.py` 和 `gui/tabs/__init__.py`，确立 GUI 层包结构。
+2. **实现 `gui/tabs/account_tab.py`**：
+   - 左侧 `QListWidget` 展示账号列表，当前账号加粗高亮显示"[当前]"标记
+   - 右侧编辑区：账号名称、Cookie（多行 QTextEdit）、UA 下拉（Firefox/Chrome/自定义）
+   - Cookie 编辑模式留空表示保持原值，查看模式用 Label 显示脱敏版本
+   - 新增 / 编辑 / 删除 / 设为当前账号四种操作，均委托 `account_service`
+   - "测试账号有效性"使用 `QThread + QObject Worker` 模式，不阻塞主线程
+   - 账号变更时通过 `current_account_changed` 信号通知主窗口
+3. **实现 `gui/main_window.py`**：
+   - `MainWindow(QMainWindow)`，默认 1200×800，最小 1000×700
+   - `QTabWidget` 包含 6 个 Tab：评论爬取（占位）/ 时间统计（占位）/ CSV 去重（占位）/ 历史记录（占位）/ 账号管理（完整实现）/ 帮助教程（占位）
+   - 底部状态栏：左侧"就绪"文字 + 右侧当前账号名（实时更新）
+4. **实现 `gui/app.py`**：`run_gui()` 函数，设置高 DPI 策略、全局字体（Microsoft YaHei UI）、QApplication 元数据
+5. **新建 `gui_main.py`（项目根目录）**：GUI 入口，自动切换 cwd 到项目根目录，检查 Python 版本和 PySide6 可用性
+
+### 关键变更
+
+| 文件 | 变更类型 | 说明 |
+|------|---------|------|
+| `gui/__init__.py` | 新增 | GUI 包初始化 |
+| `gui/app.py` | 新增 | QApplication 创建与启动 |
+| `gui/main_window.py` | 新增 | 主窗口，6 Tab 骨架 |
+| `gui/tabs/__init__.py` | 新增 | tabs 子包初始化 |
+| `gui/tabs/account_tab.py` | 新增 | 账号管理 Tab 完整实现 |
+| `gui_main.py` | 新增 | GUI 启动入口（根目录） |
+
+### 验证结果
+
+- 所有 6 个新文件 Python 语法检查通过（`ast.parse`）
+- `account_service` 导入及 `get_accounts_masked()` / `get_selected_account()` 调用正常
+- GUI 层与业务层完全解耦：`account_tab.py` 仅通过 `services/account_service` 操作数据
+
+### 遇到的问题及解决方案
+
+- 无，M1 阶段顺利完成。
+
+### 下一步计划（M2）
+
+- 实现"评论爬取 Tab"：BV 号/链接输入、模式选择、参数配置、进度展示、日志输出
+- 需要将 `crawl_service.run_crawl()` 接入 QThread Worker
+- 涉及 `TaskCallbacks` 的 GUI 实现（信号 emit 版本）
+
+---
