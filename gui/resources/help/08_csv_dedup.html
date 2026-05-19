@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+p { margin: 8px 0; }
+code { background: #f4f4f4; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+.step { background: #f0f8ff; border-left: 4px solid #2980b9; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+.warn { background: #fff1f0; border: 1px solid #ffa39e; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.warn-title { font-weight: bold; color: #cf1322; }
+.tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.tip-title { font-weight: bold; color: #d48806; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { background: #edf2f7; padding: 7px 10px; text-align: left; border-bottom: 2px solid #c5cdd8; font-size: 12px; }
+td { padding: 6px 10px; border-bottom: 1px solid #e8ecf0; font-size: 12px; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+ul { margin: 6px 0; padding-left: 20px; }
+li { margin: 4px 0; }
+</style></head>
+<body>
+<h1>CSV 去重说明</h1>
+<p>CSV 去重功能用于将两个来源的评论 CSV 文件合并，去除重复评论，生成一份覆盖率更高的完整数据集。</p>
+
+<h2>适用场景</h2>
+<ul>
+  <li>用两个不同账号对同一视频分别爬取，通过合并提高覆盖率（如账号 A 爬到 80%，账号 B 爬到 85%，合并后可能达到 95%）</li>
+  <li>在不同时间对同一视频爬取了两次，希望合并获得最完整的历史评论记录</li>
+</ul>
+
+<h2>重要：选择正确的输入文件</h2>
+<div class="warn">
+  <p class="warn-title">必须使用含有 rpid 列的文件</p>
+  <p>CSV 去重依赖每条评论的 <strong>rpid（评论唯一 ID）</strong> 字段来判断两条评论是否相同。</p>
+  <p>正确的输入文件位于：<strong>爬取输出文件夹 → 原始数据 → 合并去重结果.csv</strong></p>
+  <p>请勿使用输出文件夹根目录下的"最终数据 CSV"，那些文件已移除 rpid 列，无法用于此处去重。</p>
+</div>
+
+<h2>操作流程</h2>
+
+<div class="step">
+  <p><strong>第一步</strong>：切换到 <strong>CSV 去重</strong> Tab</p>
+</div>
+
+<div class="step">
+  <p><strong>第二步</strong>：分别点击"文件 A"和"文件 B"旁的 <strong>浏览…</strong> 按钮，选择两个来源的 CSV 文件</p>
+</div>
+
+<div class="step">
+  <p><strong>第三步</strong>：确认输出目录（默认为文件 A 同目录下的 <code>dedup_output</code> 子文件夹，也可自行修改）</p>
+</div>
+
+<div class="step">
+  <p><strong>第四步</strong>：点击 <strong>开始去重</strong>，等待处理完成</p>
+</div>
+
+<h2>结果说明</h2>
+<p>处理完成后，界面会显示六项统计摘要：</p>
+<table>
+  <tr><th>统计项</th><th>说明</th></tr>
+  <tr><td>文件 A 评论数</td><td>输入文件 A 的总评论行数</td></tr>
+  <tr><td>文件 B 评论数</td><td>输入文件 B 的总评论行数</td></tr>
+  <tr><td>合并结果</td><td>去重后的唯一评论总数（输出文件中的行数）</td></tr>
+  <tr><td>重复评论</td><td>在两个文件中均出现的评论数量</td></tr>
+  <tr><td>A 独有</td><td>仅在文件 A 中出现的评论数</td></tr>
+  <tr><td>B 独有</td><td>仅在文件 B 中出现的评论数</td></tr>
+</table>
+
+<div class="tip">
+  <p class="tip-title">提示</p>
+  <p>去重结果文件同样包含 rpid 列，可以继续作为下一次 CSV 去重的输入文件，实现多次合并叠加。</p>
+</div>
+</body>
+</html>

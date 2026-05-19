@@ -3,7 +3,8 @@
 <head><meta charset="utf-8"><style>
 body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
 h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
-h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 24px; margin-bottom: 8px; }
+h3 { font-size: 13px; color: #34495e; margin-top: 14px; margin-bottom: 6px; font-weight: bold; }
 p { margin: 8px 0; }
 .mode-card { border: 1px solid #d5dde5; border-radius: 6px; padding: 14px 16px; margin: 12px 0; }
 .mode-card h3 { margin: 0 0 8px 0; font-size: 14px; }
@@ -13,64 +14,66 @@ p { margin: 8px 0; }
 .tag-advanced { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
 .recommend { border-color: #91caff; background: #f0f8ff; }
 .label { color: #7f8c8d; font-size: 11px; font-weight: bold; }
-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-th { background: #edf2f7; padding: 8px 10px; text-align: left; border-bottom: 2px solid #c5cdd8; font-size: 12px; }
-td { padding: 7px 10px; border-bottom: 1px solid #e8ecf0; font-size: 12px; vertical-align: top; }
-tr:last-child td { border-bottom: none; }
+.tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.tip-title { font-weight: bold; color: #d48806; }
+.warn { background: #fff1f0; border: 1px solid #ffa39e; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.warn-title { font-weight: bold; color: #cf1322; }
+ul { margin: 6px 0; padding-left: 20px; }
+li { margin: 4px 0; }
 </style></head>
 <body>
 <h1>爬取模式说明</h1>
-<p>本程序提供四种爬取模式，适用于不同的使用场景。</p>
+<p>本程序提供两大类爬取模式。对于大多数场景，直接使用综合模式即可。</p>
 
 <div class="mode-card recommend">
   <h3>综合模式 <span class="tag tag-recommend">推荐</span></h3>
-  <p><span class="label">原理：</span>同时以"热度排序"和"时间排序"两种方式获取全部评论，然后按 rpid（评论唯一 ID）自动去重合并，取两者并集。</p>
-  <p><span class="label">优点：</span>数据最完整，能覆盖热门评论（热度排序）和最新评论（时间排序）两端，遗漏率最低。</p>
-  <p><span class="label">适用：</span>全量存档、数据分析、首次爬取某视频。</p>
-  <p><span class="label">耗时：</span>约为单模式的 2 倍。</p>
-</div>
-
-<div class="mode-card">
-  <h3>热度模式</h3>
-  <p><span class="label">原理：</span>按 B 站热度算法（点赞数 + 回复数 + 时间衰减）排序获取评论，优先抓取热门评论。</p>
-  <p><span class="label">优点：</span>速度较快；热门评论优先，适合关注主流观点。</p>
-  <p><span class="label">缺点：</span>低热度评论（如最新评论）可能未被抓取到。</p>
-  <p><span class="label">适用：</span>快速获取视频主要观点，不关心完整性。</p>
-</div>
-
-<div class="mode-card">
-  <h3>时间模式</h3>
-  <p><span class="label">原理：</span>按评论发布时间倒序排列获取，最新评论最先出现。</p>
-  <p><span class="label">优点：</span>可以获取到最新发布的评论；对时间敏感的内容（如热点事件）适用。</p>
-  <p><span class="label">缺点：</span>早期热门评论可能出现在很后面，全量获取时间较长。</p>
-  <p><span class="label">适用：</span>追踪新评论、关注舆情变化。</p>
+  <p><span class="label">原理：</span>分别以"热度排序"和"时间排序"两种方式各爬取一遍，然后按 rpid（评论唯一 ID）自动去重合并，取两者并集。</p>
+  <p><span class="label">优点：</span>数据最完整，能覆盖热门评论和最新评论两端，遗漏率最低。</p>
+  <p><span class="label">耗时：</span>约为单次爬取的 2 倍。</p>
+  <p><span class="label">适用：</span>全量存档、数据分析、绝大多数使用场景。</p>
 </div>
 
 <div class="mode-card">
   <h3>迭代模式 <span class="tag tag-advanced">高级</span></h3>
-  <p><span class="label">原理：</span>反复多轮爬取同一视频，每轮与上轮结果去重合并，直到新增评论数低于阈值（或达到时间/轮数限制）才停止。</p>
-  <p><span class="label">优点：</span>适合追踪动态更新的评论区；每轮只爬增量，效率高。</p>
-  <p><span class="label">缺点：</span>配置较复杂；需要设置迭代轮数或重复率阈值。</p>
-  <p><span class="label">适用：</span>长期追踪某视频评论区（如追番评论、连载内容）。</p>
+  <p><span class="label">原理：</span>反复多轮爬取同一视频，每轮结果与历史结果去重合并，直到满足停止条件才结束。</p>
+  <p><span class="label">适用：</span>评论数超过 20000 条、需要突破单次爬取上限；或需要长期追踪某视频评论区动态。</p>
 </div>
 
-<h2>模式对比速查</h2>
-<table>
-  <tr>
-    <th>维度</th><th>综合</th><th>热度</th><th>时间</th><th>迭代</th>
-  </tr>
-  <tr>
-    <td>数据完整性</td><td>最高</td><td>中</td><td>高</td><td>视轮数</td>
-  </tr>
-  <tr>
-    <td>爬取速度</td><td>慢（2x）</td><td>快</td><td>中</td><td>视配置</td>
-  </tr>
-  <tr>
-    <td>配置复杂度</td><td>低</td><td>低</td><td>低</td><td>高</td>
-  </tr>
-  <tr>
-    <td>适合新手</td><td>是</td><td>是</td><td>是</td><td>否</td>
-  </tr>
-</table>
+<h2>关于单次爬取上限</h2>
+<p>B 站 API 在单次爬取约 10000 条后可能触发限制，导致爬取中断。综合模式通过两次爬取取并集，理论上可获取 20000 条左右，但两次结果通常有大量重叠，实际可获得约 15000 条不重复评论。若视频评论数远超此数量，请使用迭代模式。</p>
+
+<h2>迭代模式详解</h2>
+
+<h3>为什么要有迭代模式？</h3>
+<p>当评论数已经超过 2 万条时，仅靠一次综合爬取是不可能完整获取的。但对于一些可以预见到评论数会快速增长的视频（比如二游的重大版本 PV、热门话题视频），我们可以在发布后就开始反复爬取、剔除重复，并在评论增长逐渐放缓后得到一份覆盖率接近完整的评论数据集。</p>
+
+<h3>何时停止？——两种判断模式</h3>
+
+<p>如何判断"评论数增长已经放缓"？迭代模式提供了两种停止条件：</p>
+
+<p><strong>限定时间模式</strong></p>
+<p>设定一个总运行时长（例如 24 小时），到时间后无论进行了几轮都自动停止。适合以下场景：</p>
+<ul>
+  <li>已知视频在发布后某个时间窗口内评论最活跃（如前 12 小时），想完整捕获这段时间的评论舆情</li>
+  <li>对最终数量没有要求，只关心特定时间段内的评论快照</li>
+</ul>
+
+<p><strong>限定重复率模式</strong></p>
+<p>每轮爬取结束后，计算本轮与历史合并结果的重复率；当重复率超过设定阈值（如 95%）时，认为新评论已极少，自动停止。适合以下场景：</p>
+<ul>
+  <li>想尽可能多地获取评论，直到"再爬也几乎没有新评论"为止</li>
+  <li>不确定视频最终会有多少评论，想让程序自动判断何时停止</li>
+</ul>
+
+<div class="tip">
+  <p class="tip-title">示例</p>
+  <p>假设某视频发布后 48 小时内的评论非常活跃，预计总评论数超过 10 万条——你可以选择限定时间模式，设定 48 小时，程序会在这段时间内尽可能多轮爬取并累积去重。</p>
+  <p>若你想持续爬取直到评论区基本不再新增，可选限定重复率模式，设定阈值 95%——当某轮爬取结果与已有数据的重复率超过 95% 时自动停止。</p>
+</div>
+
+<div class="warn">
+  <p class="warn-title">注意磁盘空间</p>
+  <p>迭代模式每轮都会生成一批中间文件，长时间运行可能积累 GB 级别的数据，请提前确认硬盘空间充足，并在运行期间确保设备不会异常关机。</p>
+</div>
 </body>
 </html>

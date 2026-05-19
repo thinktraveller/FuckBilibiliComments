@@ -1,0 +1,17 @@
+# 运行时依赖（已在当前环境验证）
+# Python >= 3.10 required
+
+# GUI 框架
+PySide6==6.9.2
+
+# 网络请求
+requests==2.32.5
+
+# 数据处理
+pandas==2.3.3
+
+# 图表生成
+matplotlib==3.10.6
+
+# 图像处理
+Pillow==12.0.0

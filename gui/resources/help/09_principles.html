@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 24px; margin-bottom: 8px; }
+h3 { font-size: 13px; color: #34495e; margin-top: 16px; margin-bottom: 6px; }
+p { margin: 8px 0; }
+code { background: #f4f4f4; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+.card { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 12px 16px; margin: 10px 0; }
+.tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.tip-title { font-weight: bold; color: #d48806; }
+.highlight { background: #e6f7ff; border-left: 4px solid #2980b9; padding: 6px 12px; margin: 8px 0; border-radius: 0 4px 4px 0; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+th { background: #edf2f7; padding: 7px 10px; text-align: left; border-bottom: 2px solid #c5cdd8; font-size: 12px; }
+td { padding: 6px 10px; border-bottom: 1px solid #e8ecf0; font-size: 12px; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+.field-key { font-family: Consolas, monospace; font-size: 11px; color: #c0392b; background: #fdf2f2; padding: 1px 4px; border-radius: 3px; }
+</style></head>
+<body>
+<h1>工作原理</h1>
+<p>了解工具的底层运作机制，有助于理解为什么需要 Cookie、为什么存在爬取上限、以及输出文件里每一列数据的来源。</p>
+
+<h2>脚本在做什么？</h2>
+<div class="card">
+  <p>本工具的本质是<strong>模拟已登录用户在浏览器里翻看评论的行为</strong>。</p>
+  <p>每次你在 B 站滚动评论区，浏览器就会向 B 站的评论 API 发送一次 HTTP GET 请求，B 站返回当页的评论数据（JSON 格式）。本工具通过 Python 的 <code>requests</code> 库不断重复这个过程，每页 20 条，直到所有评论页被爬取完毕。</p>
+  <p>这也是爬取单次存在上限的原因——B 站在连续请求约 500 页（10000 条）后会触发服务器限制，拒绝后续请求。</p>
+</div>
+
+<h2>发给 B 站的请求</h2>
+<p>每次请求由两部分组成：</p>
+
+<h3>请求头（模拟浏览器身份）</h3>
+<table>
+  <tr><th>字段</th><th>内容</th><th>作用</th></tr>
+  <tr>
+    <td><span class="field-key">Cookie</span></td>
+    <td>你的 B 站登录凭证（含 SESSDATA 等字段）</td>
+    <td>告诉 B 站"我已登录，可以查看全部评论"。缺少此字段则只能看到少量评论</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">User-Agent</span></td>
+    <td>浏览器标识字符串</td>
+    <td>告诉 B 站"我使用的是某某浏览器"。与 Cookie 来源浏览器保持一致可降低被识别为异常请求的概率</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">Referer</span></td>
+    <td><code>https://www.bilibili.com/</code></td>
+    <td>告诉 B 站"这个请求来自 B 站页面内部"，模拟正常页面跳转行为</td>
+  </tr>
+</table>
+
+<h3>请求参数（告诉 B 站要哪个视频的第几页）</h3>
+<table>
+  <tr><th>参数名</th><th>示例值</th><th>含义</th></tr>
+  <tr>
+    <td><span class="field-key">oid</span></td>
+    <td><code>115066334743950</code></td>
+    <td>视频的 AV 号（av id），唯一标识视频。工具从 BV 号自动转换获取</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">type</span></td>
+    <td><code>1</code></td>
+    <td>资源类型，<code>1</code> 表示普通视频评论</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">sort</span></td>
+    <td><code>0</code> 或 <code>1</code></td>
+    <td>排序方式：<code>0</code> = 热度排序（综合热度算法），<code>1</code> = 时间排序（最新优先）</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">pn</span></td>
+    <td><code>1</code>、<code>2</code>、<code>3</code>…</td>
+    <td>页码（Page Number），工具从第 1 页开始逐页请求</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">ps</span></td>
+    <td><code>20</code></td>
+    <td>每页评论数（Page Size），B 站固定每页返回 20 条评论</td>
+  </tr>
+</table>
+
+<h2>B 站返回的评论字段</h2>
+<p>B 站以 JSON 格式返回当页评论列表。每条评论包含以下关键字段，工具提取后保存到输出 CSV 文件：</p>
+
+<table>
+  <tr><th>JSON 字段</th><th>输出 CSV 列名</th><th>说明</th></tr>
+  <tr>
+    <td><span class="field-key">rpid_str</span></td>
+    <td>rpid</td>
+    <td><strong>评论唯一 ID</strong>（Reply ID）。在同一视频下永久不变，不随点赞数、回复数变化而改变。去重的唯一依据</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">parent_str</span></td>
+    <td>parent</td>
+    <td>被回复评论的 rpid。主楼评论此值为 <code>0</code>；楼中楼评论此值等于它所回复的那条评论的 rpid</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">content.message</span></td>
+    <td>评论内容</td>
+    <td>评论正文文本</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">member.uname</span></td>
+    <td>用户名称</td>
+    <td>评论者昵称</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">member.mid</span></td>
+    <td>用户 ID</td>
+    <td>评论者的 B 站 UID（数字）</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">member.level_info.current_level</span></td>
+    <td>用户等级</td>
+    <td>评论者当前 B 站等级（0–6）</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">member.sex</span></td>
+    <td>性别</td>
+    <td>评论者性别（B 站注册时填写的信息）</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">like</span></td>
+    <td>点赞数</td>
+    <td>该评论获得的点赞数量（爬取时刻的快照值）</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">rcount</span></td>
+    <td>回复数</td>
+    <td>该评论的楼中楼回复总数（爬取时刻的快照值）</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">ctime</span></td>
+    <td>时间戳 / 发布时间</td>
+    <td>评论发布时间的 UNIX 时间戳（秒）；工具同时保存原始时间戳和可读格式（如 <code>2024-01-15 14:30:22</code>）</td>
+  </tr>
+  <tr>
+    <td><span class="field-key">reply_control.location</span></td>
+    <td>IP 地区</td>
+    <td>评论者发布时的 IP 属地（如"广东"）；B 站于 2022 年起在评论中展示此信息</td>
+  </tr>
+</table>
+
+<h2>rpid 和 parent 字段的作用</h2>
+
+<div class="highlight">
+  <p><strong>rpid → 去重依据</strong></p>
+  <p>只要两条评论的 rpid 相同，无论点赞数和回复数如何变化，都判定为同一条评论并去重。这是综合模式两次爬取合并去重、以及 CSV 去重工具的底层逻辑。</p>
+</div>
+
+<div class="highlight">
+  <p><strong>parent → 层级关系依据</strong></p>
+  <p>通过逐层匹配"某条评论的 parent = 另一条评论的 rpid"，可以还原出完整的评论层级树。主楼评论的 parent 为 0，楼中楼评论的 parent 指向它直接回复的那条评论。这是生成楼中楼拖尾图的核心依据。</p>
+</div>
+
+<div class="tip">
+  <p class="tip-title">为什么最终 CSV 文件没有 rpid 列？</p>
+  <p>输出文件夹根目录下的"最终数据 CSV"是给人阅读用的，已将 rpid 和 parent 列移除以保持简洁。需要进行 CSV 去重合并时，请使用"原始数据"子目录下的"合并去重结果"文件，该文件保留了 rpid 列。</p>
+</div>
+</body>
+</html>

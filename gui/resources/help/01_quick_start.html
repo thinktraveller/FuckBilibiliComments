@@ -3,47 +3,87 @@
 <head><meta charset="utf-8"><style>
 body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
 h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
-h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 24px; margin-bottom: 8px; }
+h3 { font-size: 13px; color: #34495e; margin-top: 14px; margin-bottom: 6px; }
 p { margin: 8px 0; }
+code { background: #f4f4f4; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; font-size: 12px; }
+a { color: #2980b9; }
 .step { background: #f0f8ff; border-left: 4px solid #2980b9; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
 .step-num { font-weight: bold; color: #2980b9; font-size: 15px; }
 .tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
 .tip-title { font-weight: bold; color: #d48806; }
+.warn { background: #fff1f0; border: 1px solid #ffa39e; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.warn-title { font-weight: bold; color: #cf1322; }
+ul { margin: 6px 0; padding-left: 20px; }
+li { margin: 4px 0; }
 </style></head>
 <body>
 <h1>快速上手</h1>
 <p>按照以下步骤，可在 5 分钟内完成第一次评论爬取。</p>
 
-<h2>准备工作：获取 Cookie</h2>
+<h2>第一部分：准备工作</h2>
 
+<h3>步骤一：安装 Cookie-Editor 扩展</h3>
 <div class="step">
-  <p><span class="step-num">第一步</span>：在浏览器中安装 <strong>Cookie-Editor</strong> 扩展</p>
-  <p>在 Chrome / Edge 扩展商店搜索 "Cookie-Editor"，安装后浏览器右上角会出现扩展图标。Firefox 用户同样可在 Firefox 附加组件商店找到该扩展。</p>
+  <p>访问 Cookie-Editor 官方网站 <a href="https://cookie-editor.com/">https://cookie-editor.com/</a>，根据你的浏览器选择对应的下载链接。</p>
+  <p>安装成功后，浏览器右上角工具栏会出现 Cookie-Editor 的图标。</p>
+</div>
+<div class="warn">
+  <p class="warn-title">注意</p>
+  <p>请务必通过官网链接进入对应商店安装，<strong>不要在扩展商店中自行搜索</strong>，搜索结果中存在仿冒插件，可能造成账号信息泄露。</p>
 </div>
 
+<h3>步骤二：导出 B 站 Cookie</h3>
 <div class="step">
-  <p><span class="step-num">第二步</span>：登录 B 站，导出 Cookie</p>
-  <p>访问 <strong>bilibili.com</strong> 并登录账号，然后点击浏览器右上角的 Cookie-Editor 图标，在弹出面板底部点击 <strong>Export（导出）</strong>，Cookie 将自动复制到剪贴板。</p>
+  <p>访问 <strong>bilibili.com</strong> 并登录你的账号，然后：</p>
+  <ol style="padding-left:20px;">
+    <li>点击浏览器右上角的 Cookie-Editor 图标</li>
+    <li>在弹出面板底部点击 <strong>Export（导出）</strong></li>
+    <li>Cookie 字符串将自动复制到剪贴板</li>
+  </ol>
 </div>
 
+<h3>步骤三：获取 User-Agent</h3>
 <div class="step">
-  <p><span class="step-num">第三步</span>：将 Cookie 添加到账号管理</p>
-  <p>切换到本程序的 <strong>账号管理</strong> Tab，点击 <strong>新增</strong>，填写账号名称，在 Cookie 输入框中粘贴刚才复制的内容，然后点击 <strong>保存</strong>，再点击 <strong>设为当前账号</strong>。</p>
+  <p>User-Agent 用于告诉 B 站"请求来自哪种浏览器"，请填写你实际使用的浏览器的 UA。可通过以下方式查找：</p>
+  <ul>
+    <li><strong>Chrome</strong>：地址栏输入 <code>chrome://version</code>，找到"用户代理"</li>
+    <li><strong>Edge</strong>：地址栏输入 <code>edge://version</code>，找到"用户代理"</li>
+    <li><strong>Firefox</strong>：地址栏输入 <code>about:support</code>，找到"用户代理"</li>
+    <li><strong>通用方法</strong>：F12 → Network → 刷新页面 → 点击任意请求 → Request Headers → <code>User-Agent</code></li>
+  </ul>
 </div>
 
-<h2>开始爬取</h2>
+<h3>步骤四：在账号管理中录入账号信息</h3>
+<div class="step">
+  <p>切换到 <strong>账号管理</strong> Tab：</p>
+  <ol style="padding-left:20px;">
+    <li>点击 <strong>新增</strong></li>
+    <li>填写账号名称（自定义备注，方便区分）</li>
+    <li>在 Cookie 输入框中粘贴刚才复制的内容</li>
+    <li>粘贴你的 User-Agent</li>
+    <li>点击 <strong>保存</strong>，再点击 <strong>设为当前账号</strong></li>
+  </ol>
+</div>
+
+<div class="warn">
+  <p class="warn-title">安全提醒</p>
+  <p>Cookie 是你 B 站账号的登录凭证，请勿分享给他人，也不要将包含 Cookie 的配置文件上传到任何平台。</p>
+</div>
+
+<h2>第二部分：开始爬取</h2>
 
 <div class="step">
-  <p><span class="step-num">第四步</span>：在"评论爬取"Tab 中输入视频地址</p>
-  <p>切换到 <strong>评论爬取</strong> Tab，在顶部输入框中粘贴 B 站视频链接（如 <code>https://www.bilibili.com/video/BV1xx...</code>）或 BV 号，点击 <strong>解析</strong>，确认视频信息无误后，点击 <strong>开始爬取</strong>。</p>
+  <p><span class="step-num">步骤五</span>：切换到 <strong>评论爬取</strong> Tab</p>
+  <p>在顶部输入框粘贴 B 站视频链接（如 <code>https://www.bilibili.com/video/BV1xx...</code>）或 BV 号，点击 <strong>解析</strong>，确认视频信息无误后，点击 <strong>开始爬取</strong>。</p>
 </div>
 
 <div class="tip">
   <p class="tip-title">提示</p>
-  <p>首次爬取建议选择 <strong>综合模式</strong>，该模式会同时获取热度排序和时间排序的评论，数据最全面。爬取过程中可随时切换到其他 Tab，程序会在后台继续运行。</p>
+  <p>首次爬取建议选择默认的 <strong>综合模式</strong>，覆盖率最高。爬取过程中可随时切换到其他 Tab，程序会在后台继续运行。</p>
 </div>
 
-<h2>查看结果</h2>
-<p>爬取完成后会弹出提示框，点击"打开输出文件夹"可直接查看生成的 CSV 文件。也可以在 <strong>历史记录</strong> Tab 中找到所有过往任务，双击行可直接打开对应输出文件夹。</p>
+<h2>第三部分：查看结果</h2>
+<p>爬取完成后会弹出提示框，点击 <strong>打开输出文件夹</strong> 可直接查看生成的 CSV 文件。也可以在 <strong>历史记录</strong> Tab 中找到所有过往任务，双击行可直接打开对应输出文件夹。</p>
 </body>
 </html>

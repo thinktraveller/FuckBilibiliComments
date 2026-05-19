@@ -23,13 +23,12 @@ from PySide6.QtGui import QFont
 # ---------------------------------------------------------------------------
 
 _CHAPTERS = [
-    ("快速上手",             "01_quick_start.html"),
-    ("Cookie 获取（Chrome/Edge）", "02_cookie_chrome.html"),
-    ("Cookie 获取（Firefox）",     "03_cookie_firefox.html"),
-    ("User-Agent 获取",            "04_user_agent.html"),
-    ("爬取模式说明",               "05_crawl_modes.html"),
-    ("常见错误",                   "06_common_errors.html"),
-    ("隐私与免责",                 "07_privacy.html"),
+    ("快速上手",   "01_quick_start.html"),
+    ("工作原理",   "09_principles.html"),
+    ("爬取模式说明", "05_crawl_modes.html"),
+    ("CSV 去重说明", "08_csv_dedup.html"),
+    ("常见错误",   "06_common_errors.html"),
+    ("隐私与免责", "07_privacy.html"),
 ]
 
 
