@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
     QSpinBox, QDoubleSpinBox,
     QProgressBar, QPlainTextEdit,
     QSplitter, QMessageBox, QSizePolicy,
-    QFrame,
+    QFrame, QFileDialog,
 )
 from PySide6.QtCore import Qt, QThread, Signal, QObject, QTimer
 from PySide6.QtGui import QFont, QColor, QTextCursor
@@ -34,6 +34,7 @@ from FuckBilibiliComments.services.crawl_service import (
     run_crawl,
 )
 from FuckBilibiliComments.callbacks import TaskCallbacks
+from gui.gui_settings import get as settings_get, set as settings_set
 
 
 # ---------------------------------------------------------------------------
@@ -165,6 +166,9 @@ class CrawlTab(QWidget):
 
         # 历史任务 ID
         self._task_id: str | None = None
+
+        # 输出基础目录（None 表示输出到项目根目录）
+        self._base_output_dir: str | None = settings_get("default_output_dir", None)
 
         # 计时器（用于统计速率/耗时）
         self._crawl_start_time: float | None = None
@@ -375,6 +379,40 @@ class CrawlTab(QWidget):
         interval_row.addStretch()
 
         layout.addLayout(interval_row)
+
+        # 输出目录
+        output_box = QGroupBox("输出目录")
+        output_layout = QVBoxLayout(output_box)
+        output_layout.setSpacing(4)
+
+        dir_row = QHBoxLayout()
+        self._output_dir_edit = QLineEdit()
+        self._output_dir_edit.setReadOnly(True)
+        self._output_dir_edit.setPlaceholderText("默认：项目根目录下自动命名子文件夹")
+        if self._base_output_dir:
+            self._output_dir_edit.setText(self._base_output_dir)
+        dir_row.addWidget(self._output_dir_edit)
+
+        browse_btn = QPushButton("浏览…")
+        browse_btn.setFixedWidth(60)
+        browse_btn.clicked.connect(self._on_browse_output_dir)
+        dir_row.addWidget(browse_btn)
+
+        clear_btn = QPushButton("清除")
+        clear_btn.setFixedWidth(50)
+        clear_btn.clicked.connect(self._on_clear_output_dir)
+        dir_row.addWidget(clear_btn)
+
+        output_layout.addLayout(dir_row)
+
+        self._set_default_btn = QPushButton("设为默认输出目录")
+        self._set_default_btn.setFixedHeight(26)
+        self._set_default_btn.setEnabled(bool(self._base_output_dir))
+        self._set_default_btn.setStyleSheet("font-size: 11px;")
+        self._set_default_btn.clicked.connect(self._on_set_default_output_dir)
+        output_layout.addWidget(self._set_default_btn)
+
+        layout.addWidget(output_box)
         layout.addStretch()
 
         return group
@@ -532,6 +570,31 @@ class CrawlTab(QWidget):
         self._account_name_label.setText(name)
 
     # ------------------------------------------------------------------
+    # 输出目录操作
+    # ------------------------------------------------------------------
+
+    def _on_browse_output_dir(self):
+        start = self._base_output_dir or ""
+        path = QFileDialog.getExistingDirectory(self, "选择输出基础目录", start)
+        if path:
+            self._base_output_dir = path
+            self._output_dir_edit.setText(path)
+            self._set_default_btn.setEnabled(True)
+
+    def _on_clear_output_dir(self):
+        self._base_output_dir = None
+        self._output_dir_edit.clear()
+        self._set_default_btn.setEnabled(False)
+
+    def _on_set_default_output_dir(self):
+        if self._base_output_dir:
+            settings_set("default_output_dir", self._base_output_dir)
+            QMessageBox.information(
+                self, "已保存",
+                f"已将以下目录设为默认输出位置：\n{self._base_output_dir}"
+            )
+
+    # ------------------------------------------------------------------
     # 参数区启用控制
     # ------------------------------------------------------------------
 
@@ -539,15 +602,16 @@ class CrawlTab(QWidget):
         for w in (
             self._rb_comprehensive, self._rb_iterative,
             self._cb_replies, self._interval_spin,
+            self._output_dir_edit, self._set_default_btn,
         ):
             w.setEnabled(enabled)
 
-        if enabled:
-            self._iter_params_widget.setEnabled(True)
-        else:
-            self._iter_params_widget.setEnabled(False)
-
+        self._iter_params_widget.setEnabled(enabled)
         self._start_btn.setEnabled(enabled)
+
+        # 浏览/清除按钮跟随输出目录行启用状态
+        # （通过 parent 逐级向上找到 group 内所有 QPushButton 较复杂，直接用标志控制）
+        # 已在 browse_btn / clear_btn 的 parent output_box 里，不单独管控
 
     # ------------------------------------------------------------------
     # 解析视频
@@ -678,6 +742,7 @@ class CrawlTab(QWidget):
             request_headers  = request_headers,
             output_dir       = None,
             iteration_config = iteration_config,
+            base_output_dir  = self._base_output_dir or None,
         )
 
     # ------------------------------------------------------------------

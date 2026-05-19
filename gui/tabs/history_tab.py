@@ -12,6 +12,7 @@
 """
 
 import os
+import shutil
 import subprocess
 from datetime import datetime
 
@@ -53,17 +54,54 @@ _TYPE_LABELS = {
     "stats": "统计",
 }
 
-# 表格列定义：(列头, 字段提取函数, 宽度提示)
+# 表格列定义：(列头, 宽度提示)
 # 宽度提示：None = 自动拉伸，否则为固定/初始宽度（像素）
 _COLUMNS = [
-    ("时间",   None, 140),
-    ("BV 号",  None, 100),
-    ("标题",   None, None),   # 拉伸列
-    ("类型",   None, 60),
-    ("模式",   None, 70),
-    ("评论数", None, 70),
-    ("状态",   None, 60),
+    ("时间",     140),
+    ("BV 号",    100),
+    ("标题",     None),   # 拉伸列
+    ("类型",     60),
+    ("模式",     70),
+    ("评论数",   70),
+    ("状态",     60),
+    ("日志大小", 75),
 ]
+
+_COL_LOG_SIZE = 7   # "日志大小"列索引
+
+
+# ---------------------------------------------------------------------------
+# 辅助函数
+# ---------------------------------------------------------------------------
+
+def _get_logs_dir(output_dir: str) -> str:
+    """返回 output_dir 下的 logs 子目录路径。"""
+    return os.path.join(output_dir, "logs") if output_dir else ""
+
+
+def _calc_log_size(output_dir: str) -> int:
+    """计算 logs/ 目录的总字节数，目录不存在时返回 -1。"""
+    logs_dir = _get_logs_dir(output_dir)
+    if not logs_dir or not os.path.isdir(logs_dir):
+        return -1
+    total = 0
+    for entry in os.scandir(logs_dir):
+        if entry.is_file():
+            total += entry.stat().st_size
+    return total
+
+
+def _fmt_size(size_bytes: int) -> str:
+    """将字节数格式化为人类可读字符串；-1 表示无日志目录。"""
+    if size_bytes < 0:
+        return "—"
+    if size_bytes == 0:
+        return "0 B"
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    if size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    return f"{size_bytes / 1024 / 1024:.1f} MB"
 
 
 # ---------------------------------------------------------------------------
@@ -393,9 +431,27 @@ class HistoryTab(QWidget):
 
         layout.addStretch()
 
+        # 全选按钮
+        self._select_all_btn = QPushButton("全选")
+        self._select_all_btn.setFixedWidth(55)
+        self._select_all_btn.clicked.connect(self._on_select_all)
+        layout.addWidget(self._select_all_btn)
+
+        # 清理日志按钮
+        self._clean_logs_btn = QPushButton("清理日志")
+        self._clean_logs_btn.setFixedWidth(75)
+        self._clean_logs_btn.setEnabled(False)
+        self._clean_logs_btn.setStyleSheet(
+            "QPushButton { background-color: #e67e22; color: white; border-radius: 4px; }"
+            "QPushButton:hover { background-color: #f39c12; }"
+            "QPushButton:disabled { background-color: #bdc3c7; color: #7f8c8d; }"
+        )
+        self._clean_logs_btn.clicked.connect(self._on_clean_logs)
+        layout.addWidget(self._clean_logs_btn)
+
         # 刷新按钮
         self._refresh_btn = QPushButton("刷新")
-        self._refresh_btn.setFixedWidth(70)
+        self._refresh_btn.setFixedWidth(60)
         self._refresh_btn.setStyleSheet(
             "QPushButton { background-color: #2980b9; color: white; border-radius: 4px; }"
             "QPushButton:hover { background-color: #3498db; }"
@@ -413,7 +469,7 @@ class HistoryTab(QWidget):
         # 外观
         table.setAlternatingRowColors(True)
         table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        table.setSelectionMode(QAbstractItemView.SingleSelection)
+        table.setSelectionMode(QAbstractItemView.ExtendedSelection)  # 多选
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table.verticalHeader().setVisible(False)
         table.setShowGrid(False)
@@ -427,7 +483,7 @@ class HistoryTab(QWidget):
 
         # 列宽
         header = table.horizontalHeader()
-        for i, (_, _, width) in enumerate(_COLUMNS):
+        for i, (_, width) in enumerate(_COLUMNS):
             if width is None:
                 header.setSectionResizeMode(i, QHeaderView.Stretch)
             else:
@@ -536,6 +592,11 @@ class HistoryTab(QWidget):
         raw_type  = record.get("type", "")
         type_text = _TYPE_LABELS.get(raw_type, raw_type)
 
+        # 日志大小
+        output_dir = record.get("output_dir") or ""
+        log_size_bytes = _calc_log_size(output_dir)
+        log_size_text = _fmt_size(log_size_bytes)
+
         cells = [
             time_text,
             record.get("bv") or "—",
@@ -544,6 +605,7 @@ class HistoryTab(QWidget):
             record.get("mode") or "—",
             comments_text,
             status_text,
+            log_size_text,
         ]
 
         for col, text in enumerate(cells):
@@ -555,6 +617,10 @@ class HistoryTab(QWidget):
                 item.setForeground(QColor(status_color))
                 item.setFont(QFont("", -1, QFont.Bold))
 
+            # 日志大小列：有内容时用橙色提示
+            if col == _COL_LOG_SIZE and log_size_bytes > 0:
+                item.setForeground(QColor("#e67e22"))
+
             self._table.setItem(row, col, item)
 
     # ------------------------------------------------------------------
@@ -562,13 +628,21 @@ class HistoryTab(QWidget):
     # ------------------------------------------------------------------
 
     def _on_selection_changed(self):
-        rows = self._table.selectedItems()
-        if not rows:
+        selected_rows = list({idx.row() for idx in self._table.selectedIndexes()})
+        # 更新"清理日志"按钮可用性：选中行中至少有一个存在 logs/ 目录
+        has_logs = any(
+            _calc_log_size(self._records[r].get("output_dir") or "") >= 0
+            for r in selected_rows
+            if 0 <= r < len(self._records)
+        )
+        self._clean_logs_btn.setEnabled(bool(selected_rows) and has_logs)
+
+        if len(selected_rows) == 1:
+            row = selected_rows[0]
+            if 0 <= row < len(self._records):
+                self._detail_panel.load_record(self._records[row])
+        else:
             self._detail_panel.clear()
-            return
-        row = self._table.currentRow()
-        if 0 <= row < len(self._records):
-            self._detail_panel.load_record(self._records[row])
 
     def _on_row_double_clicked(self, index):
         """双击行 = 直接打开输出文件夹（若目录存在）。"""
@@ -584,6 +658,62 @@ class HistoryTab(QWidget):
                 )
 
     # ------------------------------------------------------------------
+    # 全选 / 清理日志
+    # ------------------------------------------------------------------
+
+    def _on_select_all(self):
+        self._table.selectAll()
+
+    def _on_clean_logs(self):
+        selected_rows = sorted({idx.row() for idx in self._table.selectedIndexes()})
+        targets = []
+        for r in selected_rows:
+            if 0 <= r < len(self._records):
+                output_dir = self._records[r].get("output_dir") or ""
+                logs_dir = _get_logs_dir(output_dir)
+                if logs_dir and os.path.isdir(logs_dir):
+                    targets.append((r, logs_dir))
+
+        if not targets:
+            QMessageBox.information(self, "无日志", "选中的记录中没有可清理的日志目录。")
+            return
+
+        total_size = sum(_calc_log_size(self._records[r].get("output_dir") or "") for r, _ in targets)
+        reply = QMessageBox.question(
+            self,
+            "确认清理日志",
+            f"将删除 {len(targets)} 条记录的 logs/ 目录（共约 {_fmt_size(total_size)}）。\n\n"
+            "此操作不可恢复，历史记录条目本身不会被删除。\n确认继续？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        errors = []
+        for r, logs_dir in targets:
+            try:
+                shutil.rmtree(logs_dir)
+            except Exception as e:
+                errors.append(f"{logs_dir}：{e}")
+
+        # 刷新表格中的日志大小列
+        for r, _ in targets:
+            item = QTableWidgetItem("—")
+            item.setTextAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+            self._table.setItem(r, _COL_LOG_SIZE, item)
+
+        if errors:
+            QMessageBox.warning(self, "部分失败", "以下目录清理失败：\n" + "\n".join(errors))
+        else:
+            QMessageBox.information(
+                self, "清理完成",
+                f"已成功清理 {len(targets)} 条记录的日志目录。"
+            )
+
+        self._clean_logs_btn.setEnabled(False)
+
+    # ------------------------------------------------------------------
     # 删除记录
     # ------------------------------------------------------------------
 
@@ -592,27 +722,55 @@ class HistoryTab(QWidget):
         if not task_id:
             return
 
-        # 找到对应行的标题
         row = self._table.currentRow()
-        title = self._records[row].get("title", task_id) if 0 <= row < len(self._records) else task_id
+        record = self._records[row] if 0 <= row < len(self._records) else {}
+        title      = record.get("title", task_id) or task_id
+        output_dir = record.get("output_dir") or ""
+        logs_dir   = _get_logs_dir(output_dir)
 
-        reply = QMessageBox.question(
-            self,
-            "确认删除",
-            f"确定要删除以下记录吗？\n\n{title}\n\n（仅删除历史记录条目，不会删除输出文件。）",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
-        )
-        if reply != QMessageBox.Yes:
+        # 构建确认对话框，提供三种删除范围
+        box = QMessageBox(self)
+        box.setWindowTitle("确认删除记录")
+        box.setText(f"确定要删除以下历史记录吗？\n\n{title}")
+        box.setIcon(QMessageBox.Question)
+
+        btn_record_only = box.addButton("不删除任何本地文件", QMessageBox.ActionRole)
+        btn_with_logs   = box.addButton("仅同时删除日志",     QMessageBox.ActionRole)
+        btn_with_all    = box.addButton("同时删除本地文件",   QMessageBox.DestructiveRole)
+        btn_cancel      = box.addButton("取消",               QMessageBox.RejectRole)
+
+        # 仅当目录存在时才启用对应按钮
+        btn_with_logs.setEnabled(bool(logs_dir) and os.path.isdir(logs_dir))
+        btn_with_all.setEnabled(bool(output_dir) and os.path.isdir(output_dir))
+
+        box.setDefaultButton(btn_cancel)
+        box.exec()
+
+        clicked = box.clickedButton()
+        if clicked is btn_cancel or clicked is None:
             return
 
+        # 删除历史记录条目
         ok = history_service.delete_task(task_id)
-        if ok:
-            # 从本地缓存中移除并刷新
-            self._all_records = [r for r in self._all_records if r.get("task_id") != task_id]
-            self._apply_filters()
-        else:
+        if not ok:
             QMessageBox.warning(self, "删除失败", f"未找到任务记录：{task_id}")
+            return
+
+        # 按选择删除本地文件
+        if clicked is btn_with_logs:
+            try:
+                shutil.rmtree(logs_dir)
+            except Exception as e:
+                QMessageBox.warning(self, "删除日志失败", f"历史记录已删除，但日志目录删除失败：\n{e}")
+        elif clicked is btn_with_all:
+            try:
+                shutil.rmtree(output_dir)
+            except Exception as e:
+                QMessageBox.warning(self, "删除文件失败", f"历史记录已删除，但输出目录删除失败：\n{e}")
+
+        # 从本地缓存中移除并刷新
+        self._all_records = [r for r in self._all_records if r.get("task_id") != task_id]
+        self._apply_filters()
 
     # ------------------------------------------------------------------
     # 供外部调用的公开接口

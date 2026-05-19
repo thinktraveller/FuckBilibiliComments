@@ -91,6 +91,7 @@ class CrawlParams:
         request_headers: Optional[dict] = None,
         output_dir: Optional[str] = None,
         iteration_config: Optional[dict] = None,
+        base_output_dir: Optional[str] = None,
     ):
         self.oid              = oid
         self.bv_id            = bv_id
@@ -102,6 +103,7 @@ class CrawlParams:
         self.request_headers  = request_headers or {}
         self.output_dir       = output_dir
         self.iteration_config = iteration_config or {}
+        self.base_output_dir  = base_output_dir  # 基础目录；None 时输出到项目根目录
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +154,10 @@ def run_crawl(params: CrawlParams, cb: Optional[TaskCallbacks] = None) -> dict:
             output_folder = params.output_dir
             os.makedirs(output_folder, exist_ok=True)
         else:
-            output_folder = create_output_folder(params.bv_id, params.video_title, mode_type)
+            output_folder = create_output_folder(
+                params.bv_id, params.video_title, mode_type,
+                base_dir=params.base_output_dir or None,
+            )
 
         result["output_dir"] = output_folder
         cb.log("INFO", f"输出目录：{output_folder}")

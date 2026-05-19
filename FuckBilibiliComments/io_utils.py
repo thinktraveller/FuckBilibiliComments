@@ -133,7 +133,7 @@ def generate_safe_filename(video_title, bv_id, suffix="", file_type="original"):
     
     return base_name
 
-def create_output_folder(bv_id, video_title=None, mode_type=None):
+def create_output_folder(bv_id, video_title=None, mode_type=None, base_dir=None):
     """
     创建输出文件夹
     
@@ -189,11 +189,15 @@ def create_output_folder(bv_id, video_title=None, mode_type=None):
         except:
             folder_name = f"bilibili_crawler_{bv_id}_{date_str}"
     
+    # 若指定了基础目录，将文件夹创建在其下
+    if base_dir:
+        folder_name = os.path.join(base_dir, folder_name)
+
     # 创建主文件夹
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
     globals()['LAST_OUTPUT_FOLDER'] = folder_name
-    
+
     return folder_name
 
 def setup_logging(bv_id, output_folder):
