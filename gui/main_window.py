@@ -20,6 +20,7 @@ from PySide6.QtGui import QIcon, QFont
 from gui.tabs.account_tab import AccountTab
 from gui.tabs.crawl_tab import CrawlTab
 from gui.tabs.dedup_tab import DedupTab
+from gui.tabs.history_tab import HistoryTab
 
 
 # ---------------------------------------------------------------------------
@@ -73,6 +74,8 @@ class MainWindow(QMainWindow):
 
         self._setup_tabs()
         self._setup_status_bar()
+        # 切换到历史记录 Tab 时自动刷新
+        self._tab_widget.currentChanged.connect(self._on_tab_changed)
 
     def _setup_tabs(self):
         """向 TabWidget 添加 6 个 Tab。"""
@@ -85,8 +88,8 @@ class MainWindow(QMainWindow):
         self._tab_widget.addTab(self._dedup_tab, "CSV 去重")
 
         # Tab 3：历史记录（M4 实现）
-        history_tab = _make_placeholder_tab("历史记录\n\n（将在 M4 阶段实现）")
-        self._tab_widget.addTab(history_tab, "历史记录")
+        self._history_tab = HistoryTab()
+        self._tab_widget.addTab(self._history_tab, "历史记录")
 
         # Tab 4：账号管理（M1 完整实现）
         self._account_tab = AccountTab()
@@ -135,6 +138,11 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     # 槽函数
     # ------------------------------------------------------------------
+
+    def _on_tab_changed(self, index: int):
+        """切换到历史记录 Tab（索引 2）时自动刷新记录列表。"""
+        if index == 2 and hasattr(self, "_history_tab"):
+            self._history_tab.refresh()
 
     def _on_current_account_changed(self, name: str):
         """响应账号管理 Tab 发出的账号变更信号，更新状态栏并通知爬取 Tab。"""

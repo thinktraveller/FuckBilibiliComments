@@ -1,5 +1,45 @@
 # 构建日志
 
+## [2026-05-19] M4 阶段：历史记录 Tab
+
+### 执行的任务
+
+1. **新建 `gui/tabs/history_tab.py`**：历史记录 Tab 完整实现，包含：
+   - 工具栏：关键词搜索框（BV 号/标题）、状态下拉筛选（全部/成功/失败/已中止/运行中）、类型下拉筛选（全部/爬取/去重/统计）、手动刷新按钮
+   - 左侧 `QTableWidget` 列表：时间 / BV号 / 标题（拉伸列）/ 类型 / 模式 / 评论数 / 状态 共 7 列；状态列按颜色区分（绿/红/橙/蓝）；双击行直接打开输出文件夹
+   - 右侧 `_DetailPanel` 详情面板：展示选中记录的标题、BV号、UP主、类型、模式、状态（带颜色）、开始/结束时间、评论数、输出目录、错误信息；状态联动启用"打开输出文件夹"（仅当目录存在）和"删除记录"按钮
+   - 内存过滤：搜索/筛选变更时在已加载记录中实时过滤，无需重新读文件
+   - `refresh()` 公开接口：供外部调用触发重新读取 history.json
+2. **更新 `gui/main_window.py`**：
+   - 导入 `HistoryTab` 并将 Tab 3 从占位符替换为 `self._history_tab = HistoryTab()`
+   - 新增 `_on_tab_changed(index)` 槽：切换到历史记录 Tab（索引 2）时自动调用 `_history_tab.refresh()`，确保每次切换都显示最新数据
+
+### 关键变更
+
+| 文件 | 变更类型 | 说明 |
+|------|---------|------|
+| `gui/tabs/history_tab.py` | 新增 | 历史记录 Tab 完整实现（约 370 行） |
+| `gui/main_window.py` | 修改 | 注册 HistoryTab；添加 Tab 切换自动刷新逻辑 |
+
+### 接口对齐确认
+
+- `history_service.get_all(limit=1000)` 返回按时间倒序排列的记录列表，与 Tab 展示需求一致
+- `history_service.delete_task(task_id)` 返回 `bool`，Tab 根据返回值决定是否刷新并给出错误提示
+- 记录字段 `stats.comments`、`output_dir`、`start_time`（ISO 8601 字符串）均已正确解析
+
+### 遇到的问题及解决方案
+
+- 删除按钮的回调通过 `set_delete_callback()` 由父 Tab 注入 `_DetailPanel`，避免 `_DetailPanel` 直接持有父类引用，保持解耦。
+- 历史记录 Tab 刷新时机：未在 `CrawlTab` 内添加额外信号，而是利用 Tab 切换事件（`currentChanged`）触发刷新，避免修改已稳定的爬取 Tab。
+
+### 下一步计划（M5）
+
+- 实现「帮助教程」Tab：左侧目录树 + 右侧 QTextBrowser 渲染 Markdown 文档
+- Cookie 脱敏审计、日志安全审计
+- 错误提示统一、空状态/异常状态 UI 优化
+
+---
+
 ## [2026-05-18] M0 阶段：核心模块解耦
 
 ### 执行的任务

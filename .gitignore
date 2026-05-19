@@ -1,6 +1,7 @@
 # ===== 敏感配置 =====
 # 包含 B 站 cookie 和 user-agent
 config.json
+history.json
 
 # ===== 爬取输出文件夹 =====
 # 所有以"评论爬取_"开头的输出目录
