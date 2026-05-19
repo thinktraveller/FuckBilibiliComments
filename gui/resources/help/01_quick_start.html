@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+p { margin: 8px 0; }
+.step { background: #f0f8ff; border-left: 4px solid #2980b9; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+.step-num { font-weight: bold; color: #2980b9; font-size: 15px; }
+.tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.tip-title { font-weight: bold; color: #d48806; }
+</style></head>
+<body>
+<h1>快速上手</h1>
+<p>按照以下步骤，可在 5 分钟内完成第一次评论爬取。</p>
+
+<h2>准备工作：获取 Cookie</h2>
+
+<div class="step">
+  <p><span class="step-num">第一步</span>：在浏览器中安装 <strong>Cookie-Editor</strong> 扩展</p>
+  <p>在 Chrome / Edge 扩展商店搜索 "Cookie-Editor"，安装后浏览器右上角会出现扩展图标。Firefox 用户同样可在 Firefox 附加组件商店找到该扩展。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">第二步</span>：登录 B 站，导出 Cookie</p>
+  <p>访问 <strong>bilibili.com</strong> 并登录账号，然后点击浏览器右上角的 Cookie-Editor 图标，在弹出面板底部点击 <strong>Export（导出）</strong>，Cookie 将自动复制到剪贴板。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">第三步</span>：将 Cookie 添加到账号管理</p>
+  <p>切换到本程序的 <strong>账号管理</strong> Tab，点击 <strong>新增</strong>，填写账号名称，在 Cookie 输入框中粘贴刚才复制的内容，然后点击 <strong>保存</strong>，再点击 <strong>设为当前账号</strong>。</p>
+</div>
+
+<h2>开始爬取</h2>
+
+<div class="step">
+  <p><span class="step-num">第四步</span>：在"评论爬取"Tab 中输入视频地址</p>
+  <p>切换到 <strong>评论爬取</strong> Tab，在顶部输入框中粘贴 B 站视频链接（如 <code>https://www.bilibili.com/video/BV1xx...</code>）或 BV 号，点击 <strong>解析</strong>，确认视频信息无误后，点击 <strong>开始爬取</strong>。</p>
+</div>
+
+<div class="tip">
+  <p class="tip-title">提示</p>
+  <p>首次爬取建议选择 <strong>综合模式</strong>，该模式会同时获取热度排序和时间排序的评论，数据最全面。爬取过程中可随时切换到其他 Tab，程序会在后台继续运行。</p>
+</div>
+
+<h2>查看结果</h2>
+<p>爬取完成后会弹出提示框，点击"打开输出文件夹"可直接查看生成的 CSV 文件。也可以在 <strong>历史记录</strong> Tab 中找到所有过往任务，双击行可直接打开对应输出文件夹。</p>
+</body>
+</html>

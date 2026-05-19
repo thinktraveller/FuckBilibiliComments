@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+p { margin: 8px 0; }
+.section { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 14px 16px; margin: 12px 0; }
+.section h3 { margin: 0 0 8px 0; font-size: 14px; color: #2c3e50; }
+ul { padding-left: 20px; margin: 8px 0; }
+ul li { margin: 5px 0; }
+code { background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; }
+.disclaimer { border: 1px solid #ffccc7; background: #fff9f9; border-radius: 6px; padding: 12px 16px; margin: 16px 0; }
+.disclaimer h3 { color: #cf1322; margin: 0 0 8px 0; font-size: 14px; }
+strong { color: #2c3e50; }
+</style></head>
+<body>
+<h1>隐私与免责声明</h1>
+
+<div class="section">
+  <h3>数据存储说明</h3>
+  <ul>
+    <li><strong>完全本地存储：</strong>本工具产生的所有数据（包括爬取到的评论 CSV 文件、历史记录、账号配置）均存储在你的本地计算机上，不会上传至任何服务器。</li>
+    <li><strong>账号信息：</strong>你的 Cookie 等账号信息存储在项目目录下的 <code>config.json</code> 文件中。请妥善保管此文件，<strong>切勿将其发送给他人或上传到 GitHub 等公开平台</strong>。</li>
+    <li><strong>历史记录：</strong>任务历史记录保存在 <code>history.json</code> 中，仅记录任务参数和统计数据，<strong>不存储完整 Cookie</strong>。</li>
+    <li><strong>日志文件：</strong>爬取日志保存在各任务输出目录的 <code>logs/</code> 子目录中，仅包含过滤后的运行信息，不含完整 Cookie 内容。</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h3>Cookie 脱敏机制</h3>
+  <ul>
+    <li>账号管理列表中，Cookie 仅显示前 8 个字符 + "…"，不显示完整内容。</li>
+    <li>实时日志中不会输出完整 Cookie；如需调试，仅记录最多前 8 个字符。</li>
+    <li>历史记录中仅保存账号名称，不保存 Cookie 本体。</li>
+    <li>错误堆栈写入磁盘前，程序会自动将 Cookie 相关字段替换为"***"。</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h3>网络请求说明</h3>
+  <ul>
+    <li>本工具仅向 <strong>bilibili.com</strong> 的公开 API 发起请求，不访问任何第三方服务器。</li>
+    <li>请求使用你提供的账号 Cookie，以已登录用户身份访问 API，与正常浏览器访问行为一致。</li>
+    <li>本工具不包含广告、追踪代码或数据收集功能。</li>
+  </ul>
+</div>
+
+<div class="disclaimer">
+  <h3>免责声明</h3>
+  <ul>
+    <li>本工具仅供<strong>学习研究</strong>和个人使用，请勿用于任何商业目的。</li>
+    <li>使用本工具爬取评论数据时，请遵守 <strong>bilibili.com 用户协议</strong>和相关法律法规，尊重 UP 主和用户的内容权益。</li>
+    <li>请勿以过高频率请求 B 站接口，避免对平台服务造成负担。</li>
+    <li>因使用本工具导致的账号封禁、数据损失或其他任何后果，开发者不承担责任。</li>
+    <li>本工具为开源项目，代码完全透明可审计；如有安全疑虑，欢迎审查源代码。</li>
+  </ul>
+</div>
+
+<p style="color:#7f8c8d; font-size:11px; margin-top:20px;">如有问题或建议，请通过项目的 GitHub Issues 页面反馈。</p>
+</body>
+</html>

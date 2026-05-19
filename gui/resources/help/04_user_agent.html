@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+p { margin: 8px 0; }
+.step { background: #f0f8ff; border-left: 4px solid #2980b9; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+.step-num { font-weight: bold; color: #2980b9; font-size: 15px; }
+.tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.tip-title { font-weight: bold; color: #d48806; }
+code { background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; font-size: 11px; }
+.ua-example { background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 4px; padding: 8px 12px; margin: 8px 0; font-family: Consolas, monospace; font-size: 11px; word-break: break-all; }
+</style></head>
+<body>
+<h1>User-Agent 获取</h1>
+<p>User-Agent（UA）是浏览器向服务器报告自身信息的字符串，使用与你浏览器一致的 UA 可以降低被 B 站限流的概率。</p>
+
+<div class="tip">
+  <p class="tip-title">提示</p>
+  <p>本程序账号管理中内置了常用 UA 预设（Firefox / Chrome），<strong>大多数情况下直接选择预设即可</strong>，无需手动获取。只有当默认 UA 被频繁限流时才建议自定义。</p>
+</div>
+
+<h2>从浏览器开发者工具获取</h2>
+
+<div class="step">
+  <p><span class="step-num">1</span>：打开开发者工具</p>
+  <p>在任意页面按 <code>F12</code>，或右键页面空白处选择"检查"，打开浏览器开发者工具。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">2</span>：切换到 Network（网络）标签页</p>
+  <p>在开发者工具顶部找到并点击 <strong>Network</strong>（中文版为"网络"）标签。如果看不到，可能需要先点击 <code>>></code> 展开更多标签。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">3</span>：刷新页面，抓取请求</p>
+  <p>按 <code>F5</code> 或 <code>Ctrl+R</code> 刷新页面，此时 Network 面板会出现大量网络请求。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">4</span>：找到 User-Agent</p>
+  <p>点击列表中任意一个请求（通常第一个文档类型请求即可），在右侧 <strong>Headers（标头）</strong> 面板中向下滚动，找到 <strong>Request Headers</strong> 区域，其中 <strong>User-Agent</strong> 对应的值即为你的 UA。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">5</span>：复制并填入本程序</p>
+  <p>右键点击 User-Agent 的值，选择"复制值"，然后在本程序账号管理中选择 <strong>自定义</strong>，粘贴到 UA 输入框中保存。</p>
+</div>
+
+<h2>常见 UA 示例</h2>
+<p><strong>Chrome 124（Windows）：</strong></p>
+<div class="ua-example">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36</div>
+
+<p><strong>Firefox 125（Windows）：</strong></p>
+<div class="ua-example">Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0</div>
+
+<p><strong>Edge 124（Windows）：</strong></p>
+<div class="ua-example">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0</div>
+</body>
+</html>

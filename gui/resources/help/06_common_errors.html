@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+p { margin: 8px 0; }
+.error-card { border: 1px solid #ffccc7; border-radius: 6px; padding: 12px 16px; margin: 12px 0; background: #fff9f9; }
+.error-card h3 { margin: 0 0 8px 0; font-size: 13px; color: #cf1322; }
+.error-card .cause { color: #7f8c8d; font-size: 12px; margin: 4px 0; }
+.error-card .solution { color: #2c3e50; font-size: 12px; margin: 4px 0; }
+.label { font-weight: bold; }
+code { background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; }
+.tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.tip-title { font-weight: bold; color: #d48806; }
+</style></head>
+<body>
+<h1>常见错误与解决方法</h1>
+
+<div class="error-card">
+  <h3>Cookie 失效 / 被封禁</h3>
+  <p class="cause"><span class="label">现象：</span>日志显示"Cookie 无效"、"请求被拒绝"或爬取到 0 条评论；账号管理中测试有效性返回失败。</p>
+  <p class="solution"><span class="label">原因：</span>B 站 Cookie 有效期通常为一个月；频繁爬取可能触发风控导致 Cookie 提前失效。</p>
+  <p class="solution"><span class="label">解决：</span>重新登录 B 站后再次导出 Cookie 并更新账号信息；若多个账号均失效，等待 24 小时后再试。</p>
+</div>
+
+<div class="error-card">
+  <h3>触发限流 / 请求间隔过短</h3>
+  <p class="cause"><span class="label">现象：</span>日志显示"触发限流，等待"或"Rate limit"，爬取速度明显降低或中断。</p>
+  <p class="solution"><span class="label">原因：</span>请求频率过高，被 B 站服务器限速。</p>
+  <p class="solution"><span class="label">解决：</span>将"请求间隔"参数调大（建议 2~5 秒）；减少同时运行的爬取任务数量；换一个账号继续爬取。</p>
+</div>
+
+<div class="error-card">
+  <h3>视频不存在或已删除</h3>
+  <p class="cause"><span class="label">现象：</span>点击"解析"后显示"视频不存在"或"该视频已被删除"。</p>
+  <p class="solution"><span class="label">原因：</span>BV 号输入有误，或视频已被 UP 主删除/B 站下架。</p>
+  <p class="solution"><span class="label">解决：</span>检查输入的 BV 号是否完整（应以 <code>BV</code> 开头，后跟 10 个字母数字）；在浏览器中直接访问该 BV 号确认视频是否存在。</p>
+</div>
+
+<div class="error-card">
+  <h3>解析失败 / 网络错误</h3>
+  <p class="cause"><span class="label">现象：</span>点击"解析"后长时间无响应，或日志提示"网络连接失败"、"ConnectionError"。</p>
+  <p class="solution"><span class="label">原因：</span>本机网络连接问题，或 B 站 API 临时故障。</p>
+  <p class="solution"><span class="label">解决：</span>检查网络是否正常（可在浏览器中访问 bilibili.com 验证）；稍等几分钟后重试；如果使用了代理，确认代理配置正确。</p>
+</div>
+
+<div class="error-card">
+  <h3>爬取结果文件为空 / 0 条评论</h3>
+  <p class="cause"><span class="label">现象：</span>爬取完成，但输出 CSV 文件内容只有表头，没有数据。</p>
+  <p class="solution"><span class="label">原因：</span>该视频评论区已关闭；Cookie 失效；或视频本身没有评论。</p>
+  <p class="solution"><span class="label">解决：</span>先在浏览器中确认视频评论区是否可见；检查账号 Cookie 有效性；若评论区确实存在但爬取为空，可能触发了临时限流，等待后重试。</p>
+</div>
+
+<div class="error-card">
+  <h3>输出目录无权限</h3>
+  <p class="cause"><span class="label">现象：</span>日志显示"PermissionError"或"无法创建目录"。</p>
+  <p class="solution"><span class="label">解决：</span>将输出目录切换到用户目录下（如 <code>C:\Users\你的用户名\Documents\</code>），避免使用 C 盘根目录或 Program Files 等受保护路径。</p>
+</div>
+
+<div class="tip">
+  <p class="tip-title">通用排查步骤</p>
+  <p>1. 查看日志窗口中带有 <code>[ERROR]</code> 或 <code>[WARN]</code> 标签的行，通常包含错误原因。<br>
+  2. 在"历史记录"Tab 中找到该任务，查看"错误信息"字段。<br>
+  3. 如果问题持续，尝试重新导出 Cookie 并更新账号。</p>
+</div>
+</body>
+</html>

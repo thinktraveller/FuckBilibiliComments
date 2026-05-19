@@ -21,6 +21,7 @@ from gui.tabs.account_tab import AccountTab
 from gui.tabs.crawl_tab import CrawlTab
 from gui.tabs.dedup_tab import DedupTab
 from gui.tabs.history_tab import HistoryTab
+from gui.tabs.help_tab import HelpTab
 
 
 # ---------------------------------------------------------------------------
@@ -97,8 +98,8 @@ class MainWindow(QMainWindow):
         self._tab_widget.addTab(self._account_tab, "账号管理")
 
         # Tab 5：帮助教程（M5 实现）
-        help_tab = _make_placeholder_tab("帮助教程\n\n（将在 M5 阶段实现）")
-        self._tab_widget.addTab(help_tab, "帮助教程")
+        self._help_tab = HelpTab()
+        self._tab_widget.addTab(self._help_tab, "帮助教程")
 
     def _setup_status_bar(self):
         """配置底部状态栏。"""

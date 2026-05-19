@@ -1,5 +1,58 @@
 # 构建日志
 
+## [2026-05-19] M5 阶段：帮助教程 Tab + 空状态优化
+
+### 执行的任务
+
+1. **创建 `gui/resources/help/` 目录**，新增 7 个 HTML 帮助文档：
+   - `01_quick_start.html`：快速上手（4 步走：安装扩展 → 导出 Cookie → 添加账号 → 开始爬取）
+   - `02_cookie_chrome.html`：Chrome/Edge Cookie 获取（Cookie-Editor 方式 + F12 手动方式）
+   - `03_cookie_firefox.html`：Firefox Cookie 获取（步骤与 Chrome 类似，附存储检查器方式）
+   - `04_user_agent.html`：User-Agent 获取（F12 Network 标签抓取 + 常见 UA 示例）
+   - `05_crawl_modes.html`：四种爬取模式详解（综合/热度/时间/迭代）+ 对比速查表
+   - `06_common_errors.html`：6 类常见错误及解决方法（Cookie 失效、限流、视频不存在等）
+   - `07_privacy.html`：隐私说明（本地存储、Cookie 脱敏机制）+ 免责声明
+2. **新建 `gui/tabs/help_tab.py`**：帮助教程 Tab 完整实现，包含：
+   - 左侧 `QTreeWidget` 目录树，列出 7 个章节，选中即切换右侧内容
+   - 右侧 `QTextBrowser` 直接渲染 HTML（无需外部 Markdown 库）
+   - 通过 `_load_html()` 读取 `gui/resources/help/` 下的 HTML 文件，文件缺失时显示友好错误页
+   - 默认加载第一章节，切换章节时自动滚动到顶部
+3. **更新 `gui/main_window.py`**：
+   - 导入 `HelpTab`
+   - 将 Tab 5（帮助教程）从占位符替换为真实 `HelpTab()` 实例
+4. **优化 `gui/tabs/history_tab.py` 空状态**：
+   - 在表格区域下方增加 `QLabel` 空状态提示
+   - 修改 `_fill_table` 方法，调用 `_update_empty_state()` 控制表格与空标签的可见性
+   - 有搜索/筛选条件时显示"未找到匹配的记录"，无过滤条件时显示"暂无记录"
+
+### 关键变更
+
+| 文件 | 变更类型 | 说明 |
+|------|---------|------|
+| `gui/resources/help/01_quick_start.html` | 新增 | 快速上手帮助文档 |
+| `gui/resources/help/02_cookie_chrome.html` | 新增 | Chrome/Edge Cookie 获取文档 |
+| `gui/resources/help/03_cookie_firefox.html` | 新增 | Firefox Cookie 获取文档 |
+| `gui/resources/help/04_user_agent.html` | 新增 | User-Agent 获取文档 |
+| `gui/resources/help/05_crawl_modes.html` | 新增 | 爬取模式说明文档 |
+| `gui/resources/help/06_common_errors.html` | 新增 | 常见错误文档 |
+| `gui/resources/help/07_privacy.html` | 新增 | 隐私与免责文档 |
+| `gui/tabs/help_tab.py` | 新增 | 帮助教程 Tab 完整实现 |
+| `gui/main_window.py` | 修改 | 注册 HelpTab，替换占位符 |
+| `gui/tabs/history_tab.py` | 修改 | 增加空状态提示（暂无记录 / 未找到匹配的记录） |
+
+### 遇到的问题及解决方案
+
+- `QTextBrowser` 不原生支持 Markdown，因此将帮助文档直接编写为 HTML 格式，无需引入任何外部依赖，兼容性更好。
+- 空状态标签与表格采用同一 `QVBoxLayout` 内通过 `setVisible` 互斥切换的方式实现，逻辑简单清晰，避免了 `QStackedWidget` 的额外复杂度。
+
+### 下一步计划（M6）
+
+- PyInstaller onedir 打包配置（.spec 文件）
+- 锁定 requirements-lock.txt 版本
+- 在干净 Windows 环境中进行烟雾测试
+
+---
+
 ## [2026-05-19] M4 阶段：历史记录 Tab
 
 ### 执行的任务

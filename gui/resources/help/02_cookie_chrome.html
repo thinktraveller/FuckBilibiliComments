@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+p { margin: 8px 0; }
+.step { background: #f0f8ff; border-left: 4px solid #2980b9; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+.step-num { font-weight: bold; color: #2980b9; font-size: 15px; }
+.warn { background: #fff2f0; border: 1px solid #ffccc7; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.warn-title { font-weight: bold; color: #cf1322; }
+code { background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; }
+ol { padding-left: 20px; }
+ol li { margin: 6px 0; }
+</style></head>
+<body>
+<h1>Cookie 获取（Chrome / Edge）</h1>
+<p>本章介绍在 <strong>Google Chrome</strong> 或 <strong>Microsoft Edge</strong> 浏览器中获取 B 站 Cookie 的方法。两款浏览器步骤完全相同。</p>
+
+<h2>方法一：使用 Cookie-Editor 扩展（推荐）</h2>
+
+<div class="step">
+  <p><span class="step-num">1</span>：安装扩展</p>
+  <p>在浏览器地址栏输入 <code>chrome://extensions/</code>（Edge 用 <code>edge://extensions/</code>），打开扩展管理页面，点击右上角"开发者模式"，或直接在 Chrome 网上应用店搜索 <strong>Cookie-Editor</strong> 安装。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">2</span>：登录 B 站</p>
+  <p>访问 <strong>www.bilibili.com</strong>，用账号密码或扫码登录。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">3</span>：打开 Cookie-Editor</p>
+  <p>登录后，点击浏览器右上角扩展图标栏中的 <strong>Cookie-Editor</strong> 图标（形如一块饼干）。如果找不到，先点击拼图图标展开扩展列表。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">4</span>：导出 Cookie</p>
+  <p>在弹出面板底部，找到 <strong>Export</strong>（导出）按钮并点击，所有 Cookie 会以 JSON 格式自动复制到剪贴板。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">5</span>：粘贴到本程序</p>
+  <p>回到本程序，切换到 <strong>账号管理</strong> Tab，点击 <strong>新增</strong>，在 Cookie 输入框中按 <code>Ctrl+V</code> 粘贴，填写账号名称后保存。</p>
+</div>
+
+<h2>方法二：手动复制 SESSDATA（高级）</h2>
+<ol>
+  <li>登录 B 站后，按 <code>F12</code> 打开开发者工具。</li>
+  <li>切换到 <strong>Application（应用）</strong> 标签页。</li>
+  <li>在左侧找到 <strong>Storage > Cookies > https://www.bilibili.com</strong>。</li>
+  <li>在右侧列表中找到名为 <code>SESSDATA</code> 的条目，双击其 Value 列，复制完整值。</li>
+  <li>将值粘贴到本程序账号管理的 Cookie 输入框（格式：<code>SESSDATA=你复制的值</code>）。</li>
+</ol>
+
+<div class="warn">
+  <p class="warn-title">安全提示</p>
+  <p>Cookie 相当于你的登录凭证，<strong>请勿分享给任何人</strong>。本程序的 Cookie 仅存储在本地的 <code>config.json</code> 文件中，不会上传到任何服务器。</p>
+</div>
+</body>
+</html>

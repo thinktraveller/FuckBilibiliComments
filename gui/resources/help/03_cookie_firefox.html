@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><style>
+body { font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; font-size: 13px; color: #2c3e50; line-height: 1.8; padding: 16px; }
+h1 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #2980b9; padding-bottom: 8px; margin-bottom: 16px; }
+h2 { font-size: 15px; color: #2980b9; margin-top: 20px; margin-bottom: 8px; }
+p { margin: 8px 0; }
+.step { background: #f0f8ff; border-left: 4px solid #2980b9; padding: 10px 14px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+.step-num { font-weight: bold; color: #2980b9; font-size: 15px; }
+.tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
+.tip-title { font-weight: bold; color: #d48806; }
+code { background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 3px; padding: 1px 5px; font-family: Consolas, monospace; }
+ol { padding-left: 20px; }
+ol li { margin: 6px 0; }
+</style></head>
+<body>
+<h1>Cookie 获取（Firefox）</h1>
+<p>本章介绍在 <strong>Mozilla Firefox</strong> 浏览器中获取 B 站 Cookie 的方法。整体流程与 Chrome/Edge 类似。</p>
+
+<h2>方法一：使用 Cookie-Editor 扩展（推荐）</h2>
+
+<div class="step">
+  <p><span class="step-num">1</span>：安装扩展</p>
+  <p>在 Firefox 中访问 <strong>附加组件商店</strong>（快捷键 <code>Ctrl+Shift+A</code>），搜索 <strong>Cookie-Editor</strong>，点击 <strong>添加到 Firefox</strong>。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">2</span>：登录 B 站</p>
+  <p>访问 <strong>www.bilibili.com</strong> 并登录你的账号。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">3</span>：打开 Cookie-Editor</p>
+  <p>点击 Firefox 右上角工具栏中的 Cookie-Editor 图标。如果图标不可见，点击扩展拼图按钮展开列表找到它。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">4</span>：导出 Cookie</p>
+  <p>在 Cookie-Editor 面板底部点击 <strong>Export</strong> 按钮，Cookie JSON 会复制到剪贴板。</p>
+</div>
+
+<div class="step">
+  <p><span class="step-num">5</span>：粘贴到本程序</p>
+  <p>切换到本程序的 <strong>账号管理</strong> Tab，新增账号，将 Cookie 粘贴到 Cookie 输入框中保存。</p>
+</div>
+
+<h2>方法二：使用 Firefox 存储检查器（高级）</h2>
+<ol>
+  <li>登录 B 站后，按 <code>F12</code> 打开开发者工具。</li>
+  <li>点击顶部菜单的 <strong>存储</strong> 标签页（英文界面为 Storage）。</li>
+  <li>在左侧展开 <strong>Cookie > https://www.bilibili.com</strong>。</li>
+  <li>在右侧列表中找到 <code>SESSDATA</code> 字段，右键点击值列，选择"复制"。</li>
+  <li>回到本程序，在 Cookie 输入框填入 <code>SESSDATA=复制的值</code>。</li>
+</ol>
+
+<div class="tip">
+  <p class="tip-title">提示</p>
+  <p>Firefox 的 Cookie-Editor 扩展与 Chrome/Edge 版本功能完全相同，推荐使用扩展导出方式，更加简便，且能获取完整 Cookie（包含 bili_jct 等字段）。</p>
+</div>
+</body>
+</html>

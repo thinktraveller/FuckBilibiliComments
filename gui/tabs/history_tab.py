@@ -376,7 +376,25 @@ class HistoryTab(QWidget):
         left_layout.setSpacing(4)
 
         self._table = self._make_table()
-        left_layout.addWidget(self._table)
+
+        # 空状态提示（叠加在表格上方，内容为空时可见）
+        # 用 QWidget 容器实现叠加效果
+        table_container = QWidget()
+        table_container.setMinimumHeight(80)
+        table_stack_layout = QVBoxLayout(table_container)
+        table_stack_layout.setContentsMargins(0, 0, 0, 0)
+        table_stack_layout.addWidget(self._table)
+
+        self._empty_label = QLabel("暂无记录")
+        self._empty_label.setAlignment(Qt.AlignCenter)
+        self._empty_label.setStyleSheet(
+            "color: #bdc3c7; font-size: 16px; padding: 40px;"
+        )
+        self._empty_label.setVisible(False)
+        table_stack_layout.addWidget(self._empty_label)
+
+        # 记录"筛选结果为空"与"全量为空"的不同提示，在 _update_empty_state 中更新文字
+        left_layout.addWidget(table_container, 1)
 
         # 记录总数标签
         self._count_label = QLabel("共 0 条记录")
@@ -567,6 +585,24 @@ class HistoryTab(QWidget):
             self._set_row(row, r)
 
         self._count_label.setText(f"共 {len(records)} 条记录")
+        self._update_empty_state(records)
+
+    def _update_empty_state(self, records: list[dict]):
+        """根据记录数量控制表格和空状态标签的可见性。"""
+        is_empty = len(records) == 0
+        self._table.setVisible(not is_empty)
+        self._empty_label.setVisible(is_empty)
+        if is_empty:
+            # 根据是否有过滤条件显示不同提示
+            has_filter = bool(
+                self._search_edit.text().strip()
+                or self._status_combo.currentIndex() != 0
+                or self._type_combo.currentIndex() != 0
+            )
+            if has_filter:
+                self._empty_label.setText("未找到匹配的记录")
+            else:
+                self._empty_label.setText("暂无记录")
 
     def _set_row(self, row: int, record: dict):
         """填充一行。"""
